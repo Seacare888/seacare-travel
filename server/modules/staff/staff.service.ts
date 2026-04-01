@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import * as bcrypt from 'bcryptjs';
-import { DRIZZLE_DB } from '../../app.module';
+import { DRIZZLE_DB } from '../../database/database.module';
 import { staffUser } from '../../database/schema';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
