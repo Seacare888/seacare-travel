@@ -16,7 +16,7 @@ export default function Layout() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#0066cc] shadow-md">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#0066cc] font-black text-sm">S</div>
+            <img src="/logo.png" alt="Seacare" className="h-9 w-auto" />
             <span className="text-white font-bold text-lg">Seacare Travel</span>
           </Link>
           <nav className="hidden md:flex items-center gap-1">
