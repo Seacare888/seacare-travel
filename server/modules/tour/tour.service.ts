@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { eq, and, desc, asc } from 'drizzle-orm';
-import { DRIZZLE_DB } from '../../app.module';
+import { DRIZZLE_DB } from '../../database/database.module';
 import { tour, tourItinerary, destination } from '../../database/schema';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
