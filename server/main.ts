@@ -5,8 +5,10 @@ import { Logger } from '@nestjs/common';
 import { join } from 'path';
 import { __express as hbs } from 'hbs';
 import { AppModule } from './app.module';
+import { runMigration } from './database/migrate';
 
 async function bootstrap() {
+  await runMigration();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors({ origin: '*' });
   const dist = join(process.cwd(), 'dist', 'client');

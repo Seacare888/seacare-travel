@@ -1,16 +1,16 @@
 import * as postgres from 'postgres';
 import * as bcrypt from 'bcryptjs';
 
-async function migrate() {
+export async function runMigration() {
   const url = process.env.SUDA_DATABASE_URL;
   if (!url) {
-    console.error('SUDA_DATABASE_URL is not set');
-    process.exit(1);
+    console.error('SUDA_DATABASE_URL is not set, skipping migration');
+    return;
   }
 
   const sql = postgres(url, { ssl: 'require' });
 
-  console.log('Creating tables...');
+  console.log('Running database migration...');
 
   await sql`
     CREATE TABLE IF NOT EXISTS staff_user (
@@ -67,9 +67,6 @@ async function migrate() {
     )
   `;
 
-  console.log('Tables created.');
-
-  // Seed default admin if not exists
   const existing = await sql`SELECT id FROM staff_user WHERE username = 'admin' LIMIT 1`;
   if (existing.length === 0) {
     const hash = await bcrypt.hash('admin123', 10);
@@ -78,15 +75,8 @@ async function migrate() {
       VALUES ('admin', ${hash}, 'Administrator', 'admin')
     `;
     console.log('Default admin account created (admin / admin123).');
-  } else {
-    console.log('Admin account already exists, skipping seed.');
   }
 
   await sql.end();
   console.log('Migration complete.');
 }
-
-migrate().catch((err) => {
-  console.error('Migration failed:', err);
-  process.exit(1);
-});
