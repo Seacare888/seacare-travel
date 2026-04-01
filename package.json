@@ -6,7 +6,8 @@
     "build:server": "nest build",
     "build:client": "vite build --config vite.config.ts",
     "build": "npm run build:server && npm run build:client",
-    "start": "node dist/server/main.js"
+    "start": "node dist/server/main.js",
+    "migrate": "node dist/server/database/migrate.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.20",
