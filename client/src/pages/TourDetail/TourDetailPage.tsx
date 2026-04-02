@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeftIcon, ClockIcon, MapPinIcon, CheckIcon, XIcon, CalendarIcon, UtensilsIcon, BedDoubleIcon, DownloadIcon, ImageIcon, FileTextIcon } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { getTourDetail } from '../../api/tour';
 import type { ITour } from '../../types';
 
@@ -41,34 +42,65 @@ export default function TourDetailPage() {
   };
 
   const handleDownloadProgram = () => {
-    let text = `${tour.title}\n${'='.repeat(tour.title.length)}\n\n`;
-    text += `จุดหมาย: ${tour.destination}\n`;
-    text += `จำนวนวัน: ${tour.duration} วัน\n`;
-    text += `จุดออกเดินทาง: ${tour.departure}\n`;
-    text += `ราคา: ฿${tour.price.toLocaleString()}/ท่าน\n\n`;
-    if (tour.description) text += `ไฮไลท์ทริป:\n${tour.description}\n\n`;
+    const doc = new jsPDF();
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxW = pageW - margin * 2;
+    let y = 20;
+
+    const addText = (text: string, size: number, style: 'normal' | 'bold' = 'normal') => {
+      doc.setFontSize(size);
+      doc.setFont('helvetica', style);
+      const lines = doc.splitTextToSize(text, maxW);
+      const lineH = size * 0.5;
+      if (y + lines.length * lineH > doc.internal.pageSize.getHeight() - 20) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(lines, margin, y);
+      y += lines.length * lineH + 2;
+    };
+
+    // Title
+    addText(tour.title, 18, 'bold');
+    y += 4;
+
+    // Info
+    addText(`Destination: ${tour.destination}`, 11);
+    addText(`Duration: ${tour.duration} days`, 11);
+    addText(`Departure: ${tour.departure}`, 11);
+    addText(`Price: ${tour.price.toLocaleString()} THB / person`, 12, 'bold');
+    y += 4;
+
+    // Description
+    if (tour.description) {
+      addText('Highlights', 14, 'bold');
+      addText(tour.description, 10);
+      y += 4;
+    }
+
+    // Itinerary
     if (tour.itinerary?.length) {
-      text += `กำหนดการเดินทาง:\n${'─'.repeat(30)}\n`;
+      addText('Itinerary', 14, 'bold');
+      y += 2;
       tour.itinerary.forEach(day => {
-        text += `\nวันที่ ${day.day}: ${day.title}\n`;
-        day.activities.forEach(a => { text += `  • ${a}\n`; });
-        if (day.meals.length) text += `  มื้ออาหาร: ${day.meals.join(', ')}\n`;
-        if (day.accommodation) text += `  ที่พัก: ${day.accommodation}\n`;
+        addText(`Day ${day.day}: ${day.title}`, 12, 'bold');
+        day.activities.forEach(a => {
+          addText(`  - ${a}`, 10);
+        });
+        if (day.meals.length) addText(`  Meals: ${day.meals.join(', ')}`, 10);
+        if (day.accommodation) addText(`  Hotel: ${day.accommodation}`, 10);
+        y += 2;
       });
     }
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${tour.title}-program.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    doc.save(`${tour.title}-program.pdf`);
   };
 
   return (
     <div>
-      <section className="relative aspect-square max-h-[80vh] overflow-hidden">
-        <img src={img} alt={tour.title} className="w-full h-full object-cover" />
+      <section className="relative w-full h-[50vh] overflow-hidden">
+        <img src={img} alt={tour.title} className="w-full h-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <button onClick={() => nav('/tours')} className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full text-sm flex items-center gap-1 transition-colors">
           <ChevronLeftIcon className="w-4 h-4" />กลับ
