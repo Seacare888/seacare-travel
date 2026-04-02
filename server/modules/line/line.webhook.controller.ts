@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Headers, Logger } from '@nestjs/common';
 import { ChatService } from '../chat/chat.service';
 import { ChatGateway } from '../chat/chat.gateway';
 
@@ -12,7 +12,14 @@ export class LineWebhookController {
   ) {}
 
   @Post('webhook')
-  async handleWebhook(@Body() body: { events?: any[] }) {
+  async handleWebhook(
+    @Body() body: { events?: any[] },
+    @Headers('x-line-signature') sig: string,
+  ) {
+    // DEBUG: log full webhook body to find group ID
+    this.logger.log(`LINE webhook signature: ${sig}`);
+    this.logger.log(`LINE webhook body: ${JSON.stringify(body)}`);
+
     const events = body.events || [];
 
     for (const event of events) {
