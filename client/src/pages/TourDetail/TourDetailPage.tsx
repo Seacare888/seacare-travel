@@ -44,15 +44,23 @@ export default function TourDetailPage() {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap');
+        #print-content {
+          display: none !important;
+        }
         @media print {
           body * { visibility: hidden !important; }
-          #print-area, #print-area * { visibility: visible !important; }
-          #print-area {
+          #print-content {
+            display: block !important;
+            visibility: visible !important;
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            padding: 20px !important;
+            z-index: 99999 !important;
+          }
+          #print-content * {
+            visibility: visible !important;
           }
           nav, header, footer, .no-print { display: none !important; }
         }
@@ -141,25 +149,44 @@ export default function TourDetailPage() {
         </section>
       </div>
 
-      {/* Hidden print area */}
-      <div id="print-area" className="hidden print:block" style={{ display: 'none' }}>
-        <div style={{ fontFamily: 'sans-serif', padding: '20px', color: '#333' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>{tour.title}</h1>
-          <div style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
-            <span>จุดหมาย: {tour.destination} | </span>
-            <span>จำนวนวัน: {tour.duration} วัน | </span>
-            <span>จุดออกเดินทาง: {tour.departure}</span>
-          </div>
-          <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#0066cc', marginBottom: '20px' }}>
-            ราคา: ฿{tour.price.toLocaleString()} /ท่าน
-          </div>
-          <hr style={{ margin: '16px 0', borderColor: '#eee' }} />
+      {/* Print content - hidden on screen, visible on print */}
+      <div id="print-content">
+        <div style={{ fontFamily: "'Noto Sans Thai', 'Sarabun', sans-serif", padding: '30px', color: '#333' }}>
+          {/* Cover image */}
+          <img src={img} alt={tour.title} style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '8px', marginBottom: '20px' }} />
+
+          {/* Title */}
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '12px', color: '#0066cc' }}>{tour.title}</h1>
+
+          {/* Info */}
+          <table style={{ width: '100%', fontSize: '13px', marginBottom: '16px', borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr>
+                <td style={{ padding: '4px 12px 4px 0', color: '#666' }}>จุดหมาย:</td>
+                <td style={{ padding: '4px 0', fontWeight: 'bold' }}>{tour.destination}</td>
+                <td style={{ padding: '4px 12px 4px 24px', color: '#666' }}>จำนวนวัน:</td>
+                <td style={{ padding: '4px 0', fontWeight: 'bold' }}>{tour.duration} วัน</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '4px 12px 4px 0', color: '#666' }}>จุดออกเดินทาง:</td>
+                <td style={{ padding: '4px 0', fontWeight: 'bold' }}>{tour.departure}</td>
+                <td style={{ padding: '4px 12px 4px 24px', color: '#666' }}>ราคา:</td>
+                <td style={{ padding: '4px 0', fontWeight: 'bold', color: '#0066cc' }}>฿{tour.price.toLocaleString()} /ท่าน</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <hr style={{ margin: '16px 0', borderColor: '#ddd' }} />
+
+          {/* Description */}
           {tour.description && (
             <div style={{ marginBottom: '20px' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>ไฮไลท์ทริป</h2>
               <p style={{ lineHeight: '1.8', fontSize: '14px' }}>{tour.description}</p>
             </div>
           )}
+
+          {/* Itinerary */}
           {tour.itinerary && tour.itinerary.length > 0 && (
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px' }}>กำหนดการเดินทาง</h2>
@@ -177,8 +204,9 @@ export default function TourDetailPage() {
               ))}
             </div>
           )}
-          <hr style={{ margin: '16px 0', borderColor: '#eee' }} />
-          <p style={{ fontSize: '12px', color: '#999', textAlign: 'center' }}>Seacare Travel — {tour.title}</p>
+
+          <hr style={{ margin: '20px 0', borderColor: '#ddd' }} />
+          <p style={{ fontSize: '11px', color: '#999', textAlign: 'center' }}>Seacare Travel — {tour.title}</p>
         </div>
       </div>
     </>
