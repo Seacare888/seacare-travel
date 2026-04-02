@@ -8,6 +8,7 @@ import { AppModule } from './app.module';
 import { runMigration } from './database/migrate';
 
 async function bootstrap() {
+  console.log('[ENV CHECK]', Object.keys(process.env).join(', '));
   await runMigration();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors({ origin: '*' });
