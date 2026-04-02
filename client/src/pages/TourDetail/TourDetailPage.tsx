@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeftIcon, ClockIcon, MapPinIcon, CheckIcon, XIcon, CalendarIcon, UtensilsIcon, BedDoubleIcon } from 'lucide-react';
+import { ChevronLeftIcon, ClockIcon, MapPinIcon, CheckIcon, XIcon, CalendarIcon, UtensilsIcon, BedDoubleIcon, DownloadIcon, ImageIcon, FileTextIcon } from 'lucide-react';
 import { getTourDetail } from '../../api/tour';
 import type { ITour } from '../../types';
 
@@ -23,9 +23,51 @@ export default function TourDetailPage() {
   const imgs = tour.itinerary?.length ? [tour.coverImage!] : [tour.coverImage!];
   const img = imgs[imgIdx] || 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=800&q=80';
 
+  const handleDownloadImage = async () => {
+    const imageUrl = tour.coverImage;
+    if (!imageUrl) return;
+    try {
+      const res = await fetch(imageUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${tour.title}-cover.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(imageUrl, '_blank');
+    }
+  };
+
+  const handleDownloadProgram = () => {
+    let text = `${tour.title}\n${'='.repeat(tour.title.length)}\n\n`;
+    text += `จุดหมาย: ${tour.destination}\n`;
+    text += `จำนวนวัน: ${tour.duration} วัน\n`;
+    text += `จุดออกเดินทาง: ${tour.departure}\n`;
+    text += `ราคา: ฿${tour.price.toLocaleString()}/ท่าน\n\n`;
+    if (tour.description) text += `ไฮไลท์ทริป:\n${tour.description}\n\n`;
+    if (tour.itinerary?.length) {
+      text += `กำหนดการเดินทาง:\n${'─'.repeat(30)}\n`;
+      tour.itinerary.forEach(day => {
+        text += `\nวันที่ ${day.day}: ${day.title}\n`;
+        day.activities.forEach(a => { text += `  • ${a}\n`; });
+        if (day.meals.length) text += `  มื้ออาหาร: ${day.meals.join(', ')}\n`;
+        if (day.accommodation) text += `  ที่พัก: ${day.accommodation}\n`;
+      });
+    }
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${tour.title}-program.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
-      <section className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+      <section className="relative aspect-square max-h-[80vh] overflow-hidden">
         <img src={img} alt={tour.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <button onClick={() => nav('/tours')} className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full text-sm flex items-center gap-1 transition-colors">
@@ -51,6 +93,14 @@ export default function TourDetailPage() {
               <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                 <h2 className="text-lg font-bold text-gray-800 mb-3">ไฮไลท์ทริป</h2>
                 <p className="text-gray-600 leading-relaxed">{tour.description}</p>
+                <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100">
+                  <button onClick={handleDownloadImage} className="flex items-center gap-2 bg-[#0066cc] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-[#0052a3] transition-colors">
+                    <ImageIcon className="w-4 h-4" />ดาวน์โหลดภาพโปรแกรม
+                  </button>
+                  <button onClick={handleDownloadProgram} className="flex items-center gap-2 border-2 border-[#0066cc] text-[#0066cc] text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-blue-50 transition-colors">
+                    <FileTextIcon className="w-4 h-4" />ดาวน์โหลดโปรแกรม
+                  </button>
+                </div>
               </div>
             )}
             {tour.itinerary && tour.itinerary.length > 0 && (

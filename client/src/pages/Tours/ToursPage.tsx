@@ -69,7 +69,7 @@ export default function ToursPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map(t => (
               <div key={t.id} onClick={() => nav('/tours/'+t.id)} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer">
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative aspect-square overflow-hidden">
                   <img src={t.coverImage || 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=400&q=80'} alt={t.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                   <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
                     {t.tags?.slice(0,2).map(tag => <span key={tag} className="bg-black/55 text-white text-xs px-2 py-0.5 rounded-full">{tag}</span>)}

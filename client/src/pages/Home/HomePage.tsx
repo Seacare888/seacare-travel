@@ -24,7 +24,7 @@ function TourCard({ tour, promoted }: { tour: ITour; promoted?: boolean }) {
   const nav = useNavigate();
   return (
     <div onClick={() => nav('/tours/'+tour.id)} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer">
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative aspect-square overflow-hidden">
         <img src={tour.coverImage || 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=400&q=80'} alt={tour.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
         <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
           {promoted && <span className="bg-[#0066cc] text-white text-xs font-bold px-2 py-0.5 rounded-full">แนะนำ</span>}
