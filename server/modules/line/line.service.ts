@@ -14,13 +14,17 @@ export class LineService {
   }
 
   private async push(text: string) {
-    const token = this.getToken();
-    const groupId = this.getGroupId();
+    const token = process.env['LINE_CHANNEL_ACCESS_TOKEN'];
+    const groupId = process.env['LINE_GROUP_ID'];
 
-    this.logger.log(`push() — token=${token ? `SET(${token.slice(0, 8)}...)` : 'NOT SET'}, groupId=${groupId || 'NOT SET'}`);
+    console.log('[LINE DEBUG] All LINE env keys:', Object.keys(process.env).filter(k => k.startsWith('LINE')));
+    console.log('[LINE DEBUG] token length:', token?.length);
+    console.log('[LINE DEBUG] token first 10:', token?.slice(0, 10));
+    console.log('[LINE DEBUG] groupId:', groupId);
+    console.log('[LINE DEBUG] SITE_URL:', process.env['SITE_URL']);
 
     if (!token || !groupId) {
-      this.logger.warn('LINE not configured — skipping push');
+      console.log('[LINE DEBUG] SKIPPING — missing token or groupId');
       return;
     }
 
