@@ -6,7 +6,9 @@
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
       "Bash(git pull:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(node -e \"require\\('axios'\\)\")"
     ]
   }
 }
