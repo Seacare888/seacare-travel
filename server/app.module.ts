@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { TourModule } from './modules/tour/tour.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { LineModule } from './modules/line/line.module';
 import { ViewModule } from './modules/view/view.module';
 
 @Module({
@@ -15,6 +16,7 @@ import { ViewModule } from './modules/view/view.module';
     TourModule,
     StaffModule,
     ChatModule,
+    LineModule,
     ViewModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: GlobalExceptionFilter }],

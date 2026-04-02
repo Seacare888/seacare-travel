@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Body, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
+import { LineService } from '../line/line.service';
 
 @Controller('/api/chat')
 export class ChatController {
-  constructor(private cs: ChatService, private cg: ChatGateway) {}
+  constructor(private cs: ChatService, private cg: ChatGateway, private line: LineService) {}
 
   @Post('sessions')
   create(@Body() b: { visitorName?: string }) {
@@ -33,6 +34,7 @@ export class ChatController {
     const userMsg = this.cs.addMessage(id, 'user', b.content);
     this.cg.broadcastMessage(id, userMsg);
     this.cg.broadcastSessions();
+    this.line.notifyNewMessage(session.visitorName, b.content, id);
     if (session.status === 'ai') {
       const reply = this.cs.getAIReply(b.content);
       const aiMsg = this.cs.addMessage(id, 'ai', reply);
@@ -51,6 +53,7 @@ export class ChatController {
     this.cg.broadcastMessage(id, msg);
     this.cg.notifyStaff(this.cs.getSession(id));
     this.cg.broadcastSessions();
+    this.line.notifyStaffRequest(session.visitorName, id);
     return { success: true, data: this.cs.getSession(id) };
   }
 
