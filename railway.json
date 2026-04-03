@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": { "builder": "DOCKERFILE", "dockerfilePath": "Dockerfile" },
   "deploy": {
-    "startCommand": "node /app/dist/server/main.js",
+    "startCommand": "export LINE_CHANNEL_ACCESS_TOKEN='894j6Ub/UiHxGDFSiw7BN1yrkcvzM3ix2p6Flsodgjsg9ka8k9CJLgQKEPQBBuDG9qjh+1MpIwdQCq84n88Pn+JzpDugXc/irGuJsGITXMS8uM1LpqMDuOWVzf/jq7i+8n7myWQfGv/YTlD9/f5MPgdB04t89/1O/w1cDnyilFU=' && export LINE_GROUP_ID='Cad793dc7adf953942eac811e0f29ebee' && node /app/dist/server/main.js",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
