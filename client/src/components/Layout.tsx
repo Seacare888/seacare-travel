@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { MenuIcon, XIcon, MapIcon, HomeIcon, InfoIcon } from 'lucide-react';
-import ChatWidget from './ChatWidget';
+
 
 const nav = [
   { to: '/', label: 'หน้าแรก', icon: HomeIcon, end: true },
@@ -76,7 +76,6 @@ export default function Layout() {
           © 2026 Seacare Travel สงวนลิขสิทธิ์
         </div>
       </footer>
-      <ChatWidget />
     </div>
   );
 }
