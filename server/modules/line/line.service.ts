@@ -7,7 +7,8 @@ export class LineService {
   constructor(private config: ConfigService) {}
 
   private async push(text: string) {
-    const token = this.config.get<string>('LINE_CHANNEL_ACCESS_TOKEN');
+    const rawToken = this.config.get<string>('LINE_CHANNEL_ACCESS_TOKEN') || process.env.LINE_CHANNEL_ACCESS_TOKEN;
+    const token = rawToken ? decodeURIComponent(rawToken) : undefined;
     const groupId = this.config.get<string>('LINE_GROUP_ID');
 
     console.log('[LINE] token length:', token?.length);
