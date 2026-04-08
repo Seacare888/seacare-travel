@@ -99,6 +99,30 @@ export async function runMigration() {
     ON CONFLICT (key) DO NOTHING
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS team_member (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(255) NOT NULL,
+      role VARCHAR(255) NOT NULL,
+      description TEXT,
+      avatar_url TEXT,
+      sort_order INTEGER DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  const teamExists = await sql`SELECT id FROM team_member LIMIT 1`;
+  if (teamExists.length === 0) {
+    await sql`
+      INSERT INTO team_member (name, role, description, avatar_url, sort_order) VALUES
+      ('คุณวิภา', 'ผู้ก่อตั้งและ CEO', 'ประสบการณ์ด้านการท่องเที่ยวกว่า 15 ปี', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80', 1),
+      ('คุณสมศักดิ์', 'ผู้อำนวยการฝ่ายปฏิบัติการ', 'เชี่ยวชาญการออกแบบผลิตภัณฑ์ท่องเที่ยว', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80', 2),
+      ('คุณประภาพร', 'ผู้อำนวยการฝ่ายผลิตภัณฑ์', 'นักวางแผนการเดินทางระดับสูง', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80', 3),
+      ('คุณมานะ', 'ผู้อำนวยการฝ่ายบริการลูกค้า', 'ประสบการณ์ด้านบริการกว่า 20 ปี', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80', 4)
+    `;
+  }
+
   await sql.end();
   console.log('Migration complete.');
 }

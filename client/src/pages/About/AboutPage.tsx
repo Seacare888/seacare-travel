@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react';
 import { PhoneIcon, MailIcon, MapPinIcon, ClockIcon } from 'lucide-react';
 import { getSettings, type SiteSettings } from '../../api/settings';
-
-const TEAM = [
-  { name: 'คุณวิภา', role: 'ผู้ก่อตั้งและ CEO', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80', desc: 'ประสบการณ์ด้านการท่องเที่ยวกว่า 15 ปี' },
-  { name: 'คุณสมศักดิ์', role: 'ผู้อำนวยการฝ่ายปฏิบัติการ', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80', desc: 'เชี่ยวชาญการออกแบบผลิตภัณฑ์ท่องเที่ยว' },
-  { name: 'คุณประภาพร', role: 'ผู้อำนวยการฝ่ายผลิตภัณฑ์', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80', desc: 'นักวางแผนการเดินทางระดับสูง' },
-  { name: 'คุณมานะ', role: 'ผู้อำนวยการฝ่ายบริการลูกค้า', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80', desc: 'ประสบการณ์ด้านบริการกว่า 20 ปี' },
-];
+import { getTeamMembers, type ITeamMember } from '../../api/team';
 
 export default function AboutPage() {
   const [s, setS] = useState<SiteSettings | null>(null);
-  useEffect(() => { getSettings().then(setS).catch(() => {}); }, []);
+  const [team, setTeam] = useState<ITeamMember[]>([]);
+  useEffect(() => {
+    getSettings().then(setS).catch(() => {});
+    getTeamMembers('active').then(setTeam).catch(() => {});
+  }, []);
 
   const phone = s?.phone || '02-888-9999';
   const email = s?.email || 'contact@seacare-travel.co.th';
@@ -31,12 +29,12 @@ export default function AboutPage() {
         <section>
           <h2 className="text-2xl font-black text-gray-800 mb-8 text-center">ทีมผู้บริหาร</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {TEAM.map(m => (
-              <div key={m.name} className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
-                <img src={m.avatar} alt={m.name} className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-blue-50" />
+            {team.map(m => (
+              <div key={m.id} className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
+                <img src={m.avatarUrl || 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=200&q=80'} alt={m.name} className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-blue-50" />
                 <p className="font-bold text-gray-800 text-sm">{m.name}</p>
                 <p className="text-xs text-[#0066cc] font-medium mb-1">{m.role}</p>
-                <p className="text-xs text-gray-500">{m.desc}</p>
+                <p className="text-xs text-gray-500">{m.description}</p>
               </div>
             ))}
           </div>

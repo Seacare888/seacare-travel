@@ -9,6 +9,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { LineModule } from './modules/line/line.module';
 import { ViewModule } from './modules/view/view.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { TeamModule } from './modules/team/team.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     LineModule,
     ViewModule,
     SettingsModule,
+    TeamModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: GlobalExceptionFilter }],
 })

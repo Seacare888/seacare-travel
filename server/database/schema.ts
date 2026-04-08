@@ -45,6 +45,17 @@ export const siteSettings = pgTable('site_settings', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
+export const teamMember = pgTable('team_member', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  role: varchar('role', { length: 255 }).notNull(),
+  description: text('description'),
+  avatarUrl: text('avatar_url'),
+  sortOrder: integer('sort_order').default(0),
+  status: varchar('status', { length: 50 }).default('active'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export const tourItinerary = pgTable('tour_itinerary', {
   id: uuid('id').defaultRandom().primaryKey(),
   tourId: uuid('tour_id').notNull().references(() => tour.id, { onDelete: 'cascade' }),
