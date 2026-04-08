@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusIcon, PencilIcon, Trash2Icon, LogOutIcon, UsersIcon, MessageCircleIcon, SearchIcon, Loader2Icon, SaveIcon, XIcon } from 'lucide-react';
+import { PlusIcon, PencilIcon, Trash2Icon, LogOutIcon, UsersIcon, MessageCircleIcon, SearchIcon, Loader2Icon, SaveIcon, XIcon, SettingsIcon } from 'lucide-react';
 import { getTours, createTour, updateTour, deleteTour, getDestinations, createDestination, deleteDestination } from '../../api/tour';
 import { getAllStaff, createStaff, updateStaff, deleteStaff } from '../../api/staff';
+import { getSettings, updateSettings, type SiteSettings } from '../../api/settings';
 import { useAuth } from '../../hooks/useAuth';
 import type { ITour, IDestination, IStaff } from '../../types';
 import { toast } from 'sonner';
@@ -16,7 +17,7 @@ const REGIONS = [
   { value: 'middle-east', label: 'ตะวันออกกลาง' },
 ];
 
-type Tab = 'tours' | 'destinations' | 'staff' | 'chat';
+type Tab = 'tours' | 'destinations' | 'staff' | 'chat' | 'settings';
 
 export default function AdminPage() {
   const { user, isAdmin, logout } = useAuth();
@@ -37,12 +38,14 @@ export default function AdminPage() {
   const [tf, setTf] = useState({ title: '', description: '', destination: '', region: 'asia', duration: 5, price: 0, departure: 'กรุงเทพฯ', coverImage: '', tags: '', status: 'active', featured: false, programUrl: '' });
   const [sf, setSf] = useState({ username: '', password: '', name: '', role: 'staff' });
   const [df, setDf] = useState({ name: '', nameEn: '', region: 'asia' });
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({ phone: '', email: '', address: '', line_id: '', facebook_url: '', business_hours: '' });
+  const [settingsSaving, setSettingsSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
-      const [t, d, s] = await Promise.all([getTours({}), getDestinations({}), getAllStaff()]);
-      setTours(t); setDestinations(d); setStaff(s);
+      const [t, d, s, st] = await Promise.all([getTours({}), getDestinations({}), getAllStaff(), getSettings()]);
+      setTours(t); setDestinations(d); setStaff(s); setSiteSettings(st);
     } catch { toast.error('โหลดข้อมูลไม่สำเร็จ'); }
     finally { setLoading(false); }
   };
@@ -105,7 +108,15 @@ export default function AdminPage() {
     { id: 'destinations', label: 'จุดหมาย', icon: null },
     { id: 'staff', label: 'พนักงาน', icon: UsersIcon },
     { id: 'chat', label: 'แชท', icon: MessageCircleIcon },
+    { id: 'settings', label: 'ตั้งค่า', icon: SettingsIcon },
   ];
+
+  const saveSettings = async (e: React.FormEvent) => {
+    e.preventDefault(); setSettingsSaving(true);
+    try { const r = await updateSettings(siteSettings); setSiteSettings(r); toast.success('บันทึกการตั้งค่าสำเร็จ'); }
+    catch { toast.error('บันทึกไม่สำเร็จ'); }
+    finally { setSettingsSaving(false); }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -232,6 +243,44 @@ export default function AdminPage() {
               </table>
             </div>
           </>
+        )}
+
+        {/* Settings Tab */}
+        {tab === 'settings' && (
+          <div className="max-w-2xl">
+            <h2 className="text-lg font-bold text-gray-800 mb-5">ข้อมูลติดต่อ</h2>
+            <form onSubmit={saveSettings} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">เบอร์โทรศัพท์</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.phone} onChange={e => setSiteSettings({...siteSettings, phone: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">อีเมล</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.email} onChange={e => setSiteSettings({...siteSettings, email: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">ที่อยู่</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.address} onChange={e => setSiteSettings({...siteSettings, address: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">LINE ID</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.line_id} onChange={e => setSiteSettings({...siteSettings, line_id: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">Facebook URL</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.facebook_url} onChange={e => setSiteSettings({...siteSettings, facebook_url: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">เวลาทำการ</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.business_hours} onChange={e => setSiteSettings({...siteSettings, business_hours: e.target.value})} />
+              </div>
+              <div className="flex justify-end pt-2 border-t border-gray-100">
+                <button type="submit" disabled={settingsSaving} className="px-5 py-2 bg-[#0066cc] text-white rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3] disabled:opacity-60">
+                  {settingsSaving ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <SaveIcon className="w-4 h-4" />}บันทึก
+                </button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
 

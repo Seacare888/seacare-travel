@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPinIcon, ClockIcon, StarIcon, ShieldCheckIcon, HeartIcon, SearchIcon, PhoneIcon, MailIcon } from 'lucide-react';
 import { getTours, getDestinations } from '../../api/tour';
+import { getSettings, type SiteSettings } from '../../api/settings';
 import type { ITour, IDestination } from '../../types';
 
 const HERO = 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=80';
@@ -56,9 +57,10 @@ export default function HomePage() {
   const [search, setSearch] = useState('');
   const [selDest, setSelDest] = useState('all');
   const [tIdx, setTIdx] = useState(0);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
   useEffect(() => {
-    Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' })])
-      .then(([t, d]) => { setTours(t); setDestinations(d); })
+    Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' }), getSettings()])
+      .then(([t, d, s]) => { setTours(t); setDestinations(d); setSettings(s); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -179,18 +181,18 @@ export default function HomePage() {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center"><PhoneIcon className="w-5 h-5 text-white" /></div>
-                <div><p className="text-white font-semibold">02-888-9999</p><p className="text-white/65 text-xs">บริการตลอด 24 ชั่วโมง</p></div>
+                <div><p className="text-white font-semibold">{settings?.phone || '02-888-9999'}</p><p className="text-white/65 text-xs">บริการตลอด 24 ชั่วโมง</p></div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center"><MailIcon className="w-5 h-5 text-white" /></div>
-                <div><p className="text-white font-semibold">contact@seacare-travel.co.th</p><p className="text-white/65 text-xs">ตอบกลับภายใน 24 ชั่วโมง</p></div>
+                <div><p className="text-white font-semibold">{settings?.email || 'contact@seacare-travel.co.th'}</p><p className="text-white/65 text-xs">ตอบกลับภายใน 24 ชั่วโมง</p></div>
               </div>
             </div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-center">
             <img src="/line-qr.jpg" alt="LINE QR Code" className="w-[180px] h-[180px] mx-auto rounded-2xl border-4 border-white/30 shadow-lg" />
             <p className="text-white font-bold mt-4 text-lg">สแกนเพื่อคุยกับเรา</p>
-            <p className="text-white/70 text-sm mt-1">Line@ : @golfseacare</p>
+            <p className="text-white/70 text-sm mt-1">Line@ : {settings?.line_id || '@golfseacare'}</p>
           </div>
         </div>
       </section>

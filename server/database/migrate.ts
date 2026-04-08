@@ -79,6 +79,26 @@ export async function runMigration() {
 
   await sql`ALTER TABLE tour ADD COLUMN IF NOT EXISTS program_url TEXT`;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS site_settings (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      key VARCHAR(100) NOT NULL UNIQUE,
+      value TEXT,
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  await sql`
+    INSERT INTO site_settings (key, value) VALUES
+    ('phone', '02-888-9999'),
+    ('email', 'contact@seacare-travel.co.th'),
+    ('address', 'อาคารสีลมคอมเพล็กซ์ ชั้น 18 กรุงเทพฯ'),
+    ('line_id', '@golfseacare'),
+    ('facebook_url', 'https://www.facebook.com/share/14afZa69pXB/'),
+    ('business_hours', 'จันทร์-อาทิตย์ 9:00-21:00 น.')
+    ON CONFLICT (key) DO NOTHING
+  `;
+
   await sql.end();
   console.log('Migration complete.');
 }

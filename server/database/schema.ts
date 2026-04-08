@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, boolean, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const staffUser = pgTable('staff_user', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -36,6 +36,13 @@ export const tour = pgTable('tour', {
   programUrl: text('program_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const siteSettings = pgTable('site_settings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  key: varchar('key', { length: 100 }).notNull().unique(),
+  value: text('value'),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const tourItinerary = pgTable('tour_itinerary', {

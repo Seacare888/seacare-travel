@@ -8,6 +8,7 @@ import { StaffModule } from './modules/staff/staff.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { LineModule } from './modules/line/line.module';
 import { ViewModule } from './modules/view/view.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ViewModule } from './modules/view/view.module';
     ChatModule,
     LineModule,
     ViewModule,
+    SettingsModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: GlobalExceptionFilter }],
 })
