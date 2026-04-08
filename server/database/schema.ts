@@ -56,6 +56,18 @@ export const teamMember = pgTable('team_member', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const testimonial = pgTable('testimonial', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  customerName: varchar('customer_name', { length: 255 }).notNull(),
+  avatarUrl: text('avatar_url'),
+  content: text('content').notNull(),
+  rating: integer('rating').default(5),
+  tourName: varchar('tour_name', { length: 255 }),
+  status: varchar('status', { length: 50 }).default('active'),
+  sortOrder: integer('sort_order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export const tourItinerary = pgTable('tour_itinerary', {
   id: uuid('id').defaultRandom().primaryKey(),
   tourId: uuid('tour_id').notNull().references(() => tour.id, { onDelete: 'cascade' }),

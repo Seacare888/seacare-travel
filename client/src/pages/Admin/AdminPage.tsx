@@ -5,6 +5,7 @@ import { getTours, createTour, updateTour, deleteTour, getDestinations, createDe
 import { getAllStaff, createStaff, updateStaff, deleteStaff } from '../../api/staff';
 import { getSettings, updateSettings, type SiteSettings } from '../../api/settings';
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, type ITeamMember } from '../../api/team';
+import { getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial, type ITestimonial } from '../../api/testimonial';
 import { useAuth } from '../../hooks/useAuth';
 import type { ITour, IDestination, IStaff } from '../../types';
 import { toast } from 'sonner';
@@ -18,7 +19,7 @@ const REGIONS = [
   { value: 'middle-east', label: 'ตะวันออกกลาง' },
 ];
 
-type Tab = 'tours' | 'destinations' | 'staff' | 'chat' | 'settings' | 'team';
+type Tab = 'tours' | 'destinations' | 'staff' | 'chat' | 'settings' | 'team' | 'testimonials';
 
 export default function AdminPage() {
   const { user, isAdmin, logout } = useAuth();
@@ -45,12 +46,16 @@ export default function AdminPage() {
   const [teamDialog, setTeamDialog] = useState(false);
   const [editTeamMember, setEditTeamMember] = useState<ITeamMember | null>(null);
   const [tmf, setTmf] = useState({ name: '', role: '', description: '', avatarUrl: '', sortOrder: 0, status: 'active' });
+  const [testimonialsList, setTestimonialsList] = useState<ITestimonial[]>([]);
+  const [testimonialDialog, setTestimonialDialog] = useState(false);
+  const [editTestimonial, setEditTestimonial] = useState<ITestimonial | null>(null);
+  const [rvf, setRvf] = useState({ customerName: '', avatarUrl: '', content: '', rating: 5, tourName: '', sortOrder: 0, status: 'active' });
 
   const load = async () => {
     setLoading(true);
     try {
-      const [t, d, s, st, tm] = await Promise.all([getTours({}), getDestinations({}), getAllStaff(), getSettings(), getTeamMembers()]);
-      setTours(t); setDestinations(d); setStaff(s); setSiteSettings(st); setTeamMembers(tm);
+      const [t, d, s, st, tm, rv] = await Promise.all([getTours({}), getDestinations({}), getAllStaff(), getSettings(), getTeamMembers(), getTestimonials()]);
+      setTours(t); setDestinations(d); setStaff(s); setSiteSettings(st); setTeamMembers(tm); setTestimonialsList(rv);
     } catch { toast.error('โหลดข้อมูลไม่สำเร็จ'); }
     finally { setLoading(false); }
   };
@@ -114,6 +119,7 @@ export default function AdminPage() {
     { id: 'staff', label: 'พนักงาน', icon: UsersIcon },
     { id: 'chat', label: 'แชท', icon: MessageCircleIcon },
     { id: 'team', label: 'ทีมงาน', icon: UsersIcon },
+    { id: 'testimonials', label: 'รีวิว', icon: MessageCircleIcon },
     { id: 'settings', label: 'ตั้งค่า', icon: SettingsIcon },
   ];
 
@@ -142,6 +148,33 @@ export default function AdminPage() {
   const delTeamMember = async (id: string) => {
     if (!confirm('ยืนยันการลบ?')) return;
     try { await deleteTeamMember(id); toast.success('ลบสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
+  };
+
+  const openTestimonialCreate = () => {
+    setEditTestimonial(null);
+    setRvf({ customerName: '', avatarUrl: '', content: '', rating: 5, tourName: '', sortOrder: testimonialsList.length + 1, status: 'active' });
+    setTestimonialDialog(true);
+  };
+
+  const openTestimonialEdit = (t: ITestimonial) => {
+    setEditTestimonial(t);
+    setRvf({ customerName: t.customerName, avatarUrl: t.avatarUrl || '', content: t.content, rating: t.rating, tourName: t.tourName || '', sortOrder: t.sortOrder, status: t.status });
+    setTestimonialDialog(true);
+  };
+
+  const saveTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault(); setSubmitting(true);
+    try {
+      const data = { ...rvf, rating: Number(rvf.rating), sortOrder: Number(rvf.sortOrder) };
+      if (editTestimonial) { await updateTestimonial(editTestimonial.id, data); toast.success('แก้ไขสำเร็จ'); }
+      else { await createTestimonial(data); toast.success('เพิ่มรีวิวสำเร็จ'); }
+      setTestimonialDialog(false); load();
+    } catch { toast.error('เกิดข้อผิดพลาด'); } finally { setSubmitting(false); }
+  };
+
+  const delTestimonial = async (id: string) => {
+    if (!confirm('ยืนยันการลบ?')) return;
+    try { await deleteTestimonial(id); toast.success('ลบสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
   };
 
   const saveSettings = async (e: React.FormEvent) => {
@@ -318,6 +351,46 @@ export default function AdminPage() {
           </>
         )}
 
+        {/* Testimonials Tab */}
+        {tab === 'testimonials' && (
+          <>
+            <div className="flex justify-end mb-5">
+              <button onClick={openTestimonialCreate} className="bg-[#0066cc] text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3]"><PlusIcon className="w-4 h-4" />เพิ่มรีวิว</button>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50 text-xs text-gray-500 font-semibold uppercase">
+                  <tr><th className="px-4 py-3 text-left">ลูกค้า</th><th className="px-4 py-3 text-left hidden md:table-cell">รีวิว</th><th className="px-4 py-3 text-left hidden sm:table-cell">คะแนน</th><th className="px-4 py-3 text-left hidden sm:table-cell">สถานะ</th><th className="px-4 py-3 text-right">จัดการ</th></tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {testimonialsList.map(t => (
+                    <tr key={t.id} className="hover:bg-gray-50/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <img src={t.avatarUrl || 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=80&q=60'} className="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="" />
+                          <div><p className="font-medium text-sm text-gray-800">{t.customerName}</p><p className="text-xs text-gray-400">{t.tourName}</p></div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-600 max-w-xs truncate">{t.content}</td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-sm text-yellow-500 font-semibold">{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${t.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{t.status === 'active' ? 'แสดง' : 'ซ่อน'}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openTestimonialEdit(t)} className="p-1.5 text-gray-400 hover:text-[#0066cc] hover:bg-blue-50 rounded-lg"><PencilIcon className="w-4 h-4" /></button>
+                          {isAdmin && <button onClick={() => delTestimonial(t.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2Icon className="w-4 h-4" /></button>}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {testimonialsList.length === 0 && <p className="text-center py-10 text-gray-400 text-sm">ไม่มีรีวิว</p>}
+            </div>
+          </>
+        )}
+
         {/* Settings Tab */}
         {tab === 'settings' && (
           <div className="max-w-2xl">
@@ -483,6 +556,39 @@ export default function AdminPage() {
               </div>
               <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
                 <button type="button" onClick={() => setTeamDialog(false)} className="px-5 py-2 border border-gray-200 rounded-full text-sm text-gray-600">ยกเลิก</button>
+                <button type="submit" disabled={submitting} className="px-5 py-2 bg-[#0066cc] text-white rounded-full text-sm font-semibold flex items-center gap-1.5 disabled:opacity-60">
+                  {submitting ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <SaveIcon className="w-4 h-4" />}บันทึก
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Testimonial Dialog */}
+      {testimonialDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setTestimonialDialog(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-gray-800">{editTestimonial ? 'แก้ไขรีวิว' : 'เพิ่มรีวิว'}</h3>
+              <button onClick={() => setTestimonialDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <form onSubmit={saveTestimonial} className="p-5 space-y-3">
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">ชื่อลูกค้า *</label><input required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={rvf.customerName} onChange={e => setRvf({...rvf, customerName: e.target.value})} /></div>
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">รูปโปรไฟล์ (URL)</label><input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" placeholder="https://..." value={rvf.avatarUrl} onChange={e => setRvf({...rvf, avatarUrl: e.target.value})} /></div>
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">เนื้อหารีวิว *</label><textarea required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc] resize-none h-20" value={rvf.content} onChange={e => setRvf({...rvf, content: e.target.value})} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">คะแนน (1-5)</label><input type="number" min={1} max={5} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={rvf.rating} onChange={e => setRvf({...rvf, rating: Number(e.target.value)})} /></div>
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">ลำดับ</label><input type="number" min={0} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={rvf.sortOrder} onChange={e => setRvf({...rvf, sortOrder: Number(e.target.value)})} /></div>
+              </div>
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">ชื่อแพ็คเกจ</label><input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={rvf.tourName} onChange={e => setRvf({...rvf, tourName: e.target.value})} /></div>
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">สถานะ</label>
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={rvf.status} onChange={e => setRvf({...rvf, status: e.target.value})}>
+                  <option value="active">แสดง</option><option value="inactive">ซ่อน</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+                <button type="button" onClick={() => setTestimonialDialog(false)} className="px-5 py-2 border border-gray-200 rounded-full text-sm text-gray-600">ยกเลิก</button>
                 <button type="submit" disabled={submitting} className="px-5 py-2 bg-[#0066cc] text-white rounded-full text-sm font-semibold flex items-center gap-1.5 disabled:opacity-60">
                   {submitting ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <SaveIcon className="w-4 h-4" />}บันทึก
                 </button>

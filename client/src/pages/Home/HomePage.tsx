@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapPinIcon, ClockIcon, StarIcon, ShieldCheckIcon, HeartIcon, SearchIcon, PhoneIcon, MailIcon } from 'lucide-react';
 import { getTours, getDestinations } from '../../api/tour';
 import { getSettings, type SiteSettings } from '../../api/settings';
+import { getTestimonials, type ITestimonial } from '../../api/testimonial';
 import type { ITour, IDestination } from '../../types';
 
 const HERO = 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=80';
@@ -12,12 +13,6 @@ const FEATURES = [
   { icon: ClockIcon, title: 'บริการมืออาชีพ', desc: 'ประสบการณ์กว่า 10 ปี ทีมไกด์มืออาชีพ' },
   { icon: HeartIcon, title: 'ออกแบบทริปส่วนตัว', desc: 'ปรับแต่งทริปตามความต้องการเฉพาะตัวของคุณ' },
   { icon: MapPinIcon, title: 'ครอบคลุมทั่วโลก', desc: 'สำรวจสถานที่กว่า 50 ประเทศทั่วโลก' },
-];
-
-const TESTIMONIALS = [
-  { name: 'คุณวรรณ', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80', content: 'ทริปญี่ปุ่นสุดยอดมากค่ะ! ไกด์มืออาชีพมาก จะใช้บริการอีกแน่นอน', tour: 'ทัวร์ญี่ปุ่น โตเกียว ฟูจิ' },
-  { name: 'คุณสมชาย', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80', content: 'พาครอบครัวไปยุโรป ลูกๆ สนุกมาก บริการดีเยี่ยมครับ!', tour: 'ทัวร์ฝรั่งเศส อิตาลี' },
-  { name: 'คุณนภา', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80', content: 'มัลดีฟส์สวยงามมาก ขอบคุณ Seacare Travel สำหรับทริปฮันนีมูน', tour: 'ทัวร์มัลดีฟส์ 5 ดาว' },
 ];
 
 function TourCard({ tour, promoted }: { tour: ITour; promoted?: boolean }) {
@@ -58,17 +53,19 @@ export default function HomePage() {
   const [selDest, setSelDest] = useState('all');
   const [tIdx, setTIdx] = useState(0);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [testimonials, setTestimonials] = useState<ITestimonial[]>([]);
   useEffect(() => {
-    Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' }), getSettings()])
-      .then(([t, d, s]) => { setTours(t); setDestinations(d); setSettings(s); })
+    Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' }), getSettings(), getTestimonials('active')])
+      .then(([t, d, s, r]) => { setTours(t); setDestinations(d); setSettings(s); setTestimonials(r); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setTIdx(i => (i + 1) % TESTIMONIALS.length), 4000);
+    if (testimonials.length === 0) return;
+    const t = setInterval(() => setTIdx(i => (i + 1) % testimonials.length), 4000);
     return () => clearInterval(t);
-  }, []);
+  }, [testimonials.length]);
 
   const promoted = useMemo(() => tours.filter(t => t.featured && t.status === 'active').slice(0, 6), [tours]);
 
@@ -151,6 +148,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
+      {testimonials.length > 0 && (
       <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
@@ -158,19 +156,20 @@ export default function HomePage() {
             <p className="text-gray-500">ประสบการณ์จริงจากนักเดินทาง</p>
           </div>
           <div className="max-w-2xl mx-auto bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
-            <img src={TESTIMONIALS[tIdx].avatar} alt="" className="w-16 h-16 rounded-full object-cover mx-auto mb-4 border-4 border-blue-50" />
-            <div className="flex justify-center gap-1 mb-4">{[1,2,3,4,5].map(s => <StarIcon key={s} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}</div>
-            <p className="text-gray-600 text-lg mb-4 leading-relaxed">"{TESTIMONIALS[tIdx].content}"</p>
-            <p className="font-bold text-gray-800">{TESTIMONIALS[tIdx].name}</p>
-            <p className="text-sm text-gray-500">{TESTIMONIALS[tIdx].tour}</p>
+            <img src={testimonials[tIdx]?.avatarUrl || ''} alt="" className="w-16 h-16 rounded-full object-cover mx-auto mb-4 border-4 border-blue-50" />
+            <div className="flex justify-center gap-1 mb-4">{[1,2,3,4,5].map(s => <StarIcon key={s} className={`w-5 h-5 ${s <= (testimonials[tIdx]?.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />)}</div>
+            <p className="text-gray-600 text-lg mb-4 leading-relaxed">"{testimonials[tIdx]?.content}"</p>
+            <p className="font-bold text-gray-800">{testimonials[tIdx]?.customerName}</p>
+            <p className="text-sm text-gray-500">{testimonials[tIdx]?.tourName}</p>
             <div className="flex justify-center gap-2 mt-5">
-              {TESTIMONIALS.map((_, i) => (
+              {testimonials.map((_, i) => (
                 <button key={i} onClick={() => setTIdx(i)} className={`w-2.5 h-2.5 rounded-full transition-colors ${i === tIdx ? 'bg-[#0066cc]' : 'bg-gray-300'}`} />
               ))}
             </div>
           </div>
         </div>
       </section>
+      )}
 
       {/* Contact */}
       <section id="contact" className="py-16 px-4 bg-gradient-to-br from-[#0066cc] to-[#0052a3]">

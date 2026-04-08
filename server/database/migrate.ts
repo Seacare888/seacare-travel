@@ -123,6 +123,30 @@ export async function runMigration() {
     `;
   }
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS testimonial (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      customer_name VARCHAR(255) NOT NULL,
+      avatar_url TEXT,
+      content TEXT NOT NULL,
+      rating INTEGER DEFAULT 5,
+      tour_name VARCHAR(255),
+      status VARCHAR(50) DEFAULT 'active',
+      sort_order INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  const testimonialsExist = await sql`SELECT id FROM testimonial LIMIT 1`;
+  if (testimonialsExist.length === 0) {
+    await sql`
+      INSERT INTO testimonial (customer_name, avatar_url, content, rating, tour_name, sort_order) VALUES
+      ('คุณวรรณ', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80', 'ทริปญี่ปุ่นสุดยอดมากค่ะ! ไกด์มืออาชีพมาก จะใช้บริการอีกแน่นอน', 5, 'ทัวร์ญี่ปุ่น โตเกียว ฟูจิ', 1),
+      ('คุณสมชาย', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80', 'พาครอบครัวไปยุโรป ลูกๆ สนุกมาก บริการดีเยี่ยมครับ!', 5, 'ทัวร์ฝรั่งเศส อิตาลี', 2),
+      ('คุณนภา', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80', 'มัลดีฟส์สวยงามมาก ขอบคุณ Seacare Travel สำหรับทริปฮันนีมูน', 5, 'ทัวร์มัลดีฟส์ 5 ดาว', 3)
+    `;
+  }
+
   await sql.end();
   console.log('Migration complete.');
 }

@@ -10,6 +10,7 @@ import { LineModule } from './modules/line/line.module';
 import { ViewModule } from './modules/view/view.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { TeamModule } from './modules/team/team.module';
+import { TestimonialModule } from './modules/testimonial/testimonial.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TeamModule } from './modules/team/team.module';
     ViewModule,
     SettingsModule,
     TeamModule,
+    TestimonialModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: GlobalExceptionFilter }],
 })
