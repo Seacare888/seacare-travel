@@ -7,6 +7,7 @@ export default function AboutPage() {
   const [s, setS] = useState<SiteSettings | null>(null);
   const [team, setTeam] = useState<ITeamMember[]>([]);
   useEffect(() => {
+    document.title = 'เกี่ยวกับเรา | Seacare Travel';
     getSettings().then(setS).catch(() => {});
     getTeamMembers('active').then(setTeam).catch(() => {});
   }, []);

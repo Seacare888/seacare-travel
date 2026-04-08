@@ -22,6 +22,7 @@ export default function ToursPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = 'แพ็คเกจทัวร์ทั้งหมด | Seacare Travel';
     Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' })])
       .then(([t, d]) => { setTours(t); setDestinations(d); })
       .finally(() => setLoading(false));

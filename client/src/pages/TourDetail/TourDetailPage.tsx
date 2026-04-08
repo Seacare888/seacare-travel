@@ -12,8 +12,14 @@ export default function TourDetailPage() {
 
   useEffect(() => {
     if (!id) { nav('/tours'); return; }
-    getTourDetail(id).then(t => { if (t) setTour(t); else nav('/tours'); })
-      .catch(() => nav('/tours')).finally(() => setLoading(false));
+    getTourDetail(id).then(t => {
+      if (t) {
+        setTour(t);
+        document.title = `${t.title} | Seacare Travel`;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc && t.description) metaDesc.setAttribute('content', t.description);
+      } else nav('/tours');
+    }).catch(() => nav('/tours')).finally(() => setLoading(false));
   }, [id, nav]);
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><div className="w-10 h-10 border-4 border-[#0066cc] border-t-transparent rounded-full animate-spin" /></div>;

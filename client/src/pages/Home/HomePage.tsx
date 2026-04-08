@@ -55,6 +55,7 @@ export default function HomePage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [testimonials, setTestimonials] = useState<ITestimonial[]>([]);
   useEffect(() => {
+    document.title = 'Seacare Travel - ท่องเที่ยวรอบโลก';
     Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' }), getSettings(), getTestimonials('active')])
       .then(([t, d, s, r]) => { setTours(t); setDestinations(d); setSettings(s); setTestimonials(r); })
       .catch(() => {})
