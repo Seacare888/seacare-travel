@@ -1,5 +1,6 @@
-import { Controller, Get, Put, Body } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
+import { AuthGuard } from '../../common/guards/auth.guard';
 
 @Controller('api/settings')
 export class SettingsController {
@@ -12,6 +13,7 @@ export class SettingsController {
   }
 
   @Put()
+  @UseGuards(AuthGuard)
   async updateAll(@Body() body: Record<string, string>) {
     const data = await this.svc.updateAll(body);
     return { data };
