@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger } from '@nestjs/common';
 import { join } from 'path';
 import { __express as hbs } from 'hbs';
+import * as compression from 'compression';
 import { AppModule } from './app.module';
 import { runMigration } from './database/migrate';
 
@@ -11,6 +12,7 @@ async function bootstrap() {
   console.log('[ENV CHECK]', Object.keys(process.env).join(', '));
   await runMigration();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.use(compression());
   app.enableCors({ origin: '*' });
   const dist = join(process.cwd(), 'dist', 'client');
   app.useStaticAssets(dist);
