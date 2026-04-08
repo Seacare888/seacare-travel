@@ -77,6 +77,8 @@ export async function runMigration() {
     console.log('Default admin account created (admin / admin123).');
   }
 
+  await sql`ALTER TABLE tour ADD COLUMN IF NOT EXISTS program_url TEXT`;
+
   await sql.end();
   console.log('Migration complete.');
 }

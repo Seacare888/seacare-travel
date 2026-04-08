@@ -2,7 +2,7 @@ export interface ITour {
   id: string; title: string; description?: string;
   destination: string; region: string; duration: number; price: number;
   departure: string; coverImage?: string; tags?: string[];
-  status?: string; featured?: boolean; createdAt?: string; updatedAt?: string;
+  status?: string; featured?: boolean; programUrl?: string; createdAt?: string; updatedAt?: string;
   itinerary?: IItineraryDay[];
 }
 export interface IItineraryDay {

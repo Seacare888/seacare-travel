@@ -39,13 +39,14 @@ export class TourService {
       departure: data.departure || 'กรุงเทพฯ',
       coverImage: data.coverImage, tags: data.tags || [],
       status: data.status || 'active', featured: data.featured || false,
+      programUrl: data.programUrl || null,
     }).returning();
     return r[0];
   }
 
   async update(id: string, data: any) {
     const updates: any = { updatedAt: new Date() };
-    const fields = ['title','description','destination','region','duration','price','departure','coverImage','tags','status','featured'];
+    const fields = ['title','description','destination','region','duration','price','departure','coverImage','tags','status','featured','programUrl'];
     for (const f of fields) if (data[f] !== undefined) updates[f] = data[f];
     if (updates.duration) updates.duration = Number(updates.duration);
     if (updates.price) updates.price = Number(updates.price);

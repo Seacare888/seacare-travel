@@ -34,7 +34,7 @@ export default function AdminPage() {
   const [destDialog, setDestDialog] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const [tf, setTf] = useState({ title: '', description: '', destination: '', region: 'asia', duration: 5, price: 0, departure: 'กรุงเทพฯ', coverImage: '', tags: '', status: 'active', featured: false });
+  const [tf, setTf] = useState({ title: '', description: '', destination: '', region: 'asia', duration: 5, price: 0, departure: 'กรุงเทพฯ', coverImage: '', tags: '', status: 'active', featured: false, programUrl: '' });
   const [sf, setSf] = useState({ username: '', password: '', name: '', role: 'staff' });
   const [df, setDf] = useState({ name: '', nameEn: '', region: 'asia' });
 
@@ -53,20 +53,20 @@ export default function AdminPage() {
 
   const openTourCreate = () => {
     setEditTour(null);
-    setTf({ title: '', description: '', destination: destinations[0]?.name || '', region: 'asia', duration: 5, price: 0, departure: 'กรุงเทพฯ', coverImage: '', tags: '', status: 'active', featured: false });
+    setTf({ title: '', description: '', destination: destinations[0]?.name || '', region: 'asia', duration: 5, price: 0, departure: 'กรุงเทพฯ', coverImage: '', tags: '', status: 'active', featured: false, programUrl: '' });
     setTourDialog(true);
   };
 
   const openTourEdit = (t: ITour) => {
     setEditTour(t);
-    setTf({ title: t.title, description: t.description || '', destination: t.destination, region: t.region, duration: t.duration, price: t.price, departure: t.departure, coverImage: t.coverImage || '', tags: t.tags?.join(', ') || '', status: t.status || 'active', featured: t.featured || false });
+    setTf({ title: t.title, description: t.description || '', destination: t.destination, region: t.region, duration: t.duration, price: t.price, departure: t.departure, coverImage: t.coverImage || '', tags: t.tags?.join(', ') || '', status: t.status || 'active', featured: t.featured || false, programUrl: t.programUrl || '' });
     setTourDialog(true);
   };
 
   const saveTour = async (e: React.FormEvent) => {
     e.preventDefault(); setSubmitting(true);
     try {
-      const data = { ...tf, duration: Number(tf.duration), price: Number(tf.price), tags: tf.tags.split(',').map(t => t.trim()).filter(Boolean) };
+      const data = { ...tf, duration: Number(tf.duration), price: Number(tf.price), tags: tf.tags.split(',').map(t => t.trim()).filter(Boolean), programUrl: tf.programUrl || null };
       if (editTour) { await updateTour(editTour.id, data); toast.success('แก้ไขสำเร็จ'); }
       else { await createTour(data as any); toast.success('สร้างสำเร็จ'); }
       setTourDialog(false); load();
@@ -262,6 +262,7 @@ export default function AdminPage() {
               </div>
               <div><label className="text-xs font-medium text-gray-600 block mb-1">รูปภาพ (URL)</label><input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" placeholder="https://..." value={tf.coverImage} onChange={e => setTf({...tf, coverImage: e.target.value})} /></div>
               <div><label className="text-xs font-medium text-gray-600 block mb-1">แท็ก (คั่นด้วย ,)</label><input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" placeholder="ช้อปปิ้ง, ธรรมชาติ" value={tf.tags} onChange={e => setTf({...tf, tags: e.target.value})} /></div>
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">ลิงก์ดาวน์โหลดโปรแกรม (Google Drive)</label><input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" placeholder="https://drive.google.com/..." value={tf.programUrl} onChange={e => setTf({...tf, programUrl: e.target.value})} /></div>
               <div className="flex gap-4">
                 <div className="flex-1"><label className="text-xs font-medium text-gray-600 block mb-1">สถานะ</label>
                   <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={tf.status} onChange={e => setTf({...tf, status: e.target.value})}>

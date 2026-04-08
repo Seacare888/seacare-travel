@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeftIcon, ClockIcon, MapPinIcon, CalendarIcon, UtensilsIcon, BedDoubleIcon, ImageIcon, PrinterIcon } from 'lucide-react';
+import { ChevronLeftIcon, ClockIcon, MapPinIcon, CalendarIcon, UtensilsIcon, BedDoubleIcon, ImageIcon, DownloadIcon } from 'lucide-react';
 import { getTourDetail } from '../../api/tour';
 import type { ITour } from '../../types';
 
@@ -37,36 +37,9 @@ export default function TourDetailPage() {
     }
   };
 
-  const handlePrintProgram = () => {
-    window.print();
-  };
-
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap');
-        #print-content {
-          display: none !important;
-        }
-        @media print {
-          body * { visibility: hidden !important; }
-          #print-content {
-            display: block !important;
-            visibility: visible !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            z-index: 99999 !important;
-          }
-          #print-content * {
-            visibility: visible !important;
-          }
-          nav, header, footer, .no-print { display: none !important; }
-        }
-      `}</style>
-
-      <div className="no-print">
+      <div>
         {/* Header bar with back button and title */}
         <div className="bg-gradient-to-br from-[#0066cc] to-[#0052a3] py-8 px-4">
           <div className="max-w-6xl mx-auto">
@@ -101,9 +74,11 @@ export default function TourDetailPage() {
                     <button onClick={handleDownloadImage} className="flex items-center gap-2 bg-[#0066cc] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-[#0052a3] transition-colors">
                       <ImageIcon className="w-4 h-4" />ดาวน์โหลดภาพโปรแกรม
                     </button>
-                    <button onClick={handlePrintProgram} className="flex items-center gap-2 border-2 border-[#0066cc] text-[#0066cc] text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-blue-50 transition-colors">
-                      <PrinterIcon className="w-4 h-4" />ดาวน์โหลดโปรแกรม
-                    </button>
+                    {tour.programUrl && (
+                      <button onClick={() => window.open(tour.programUrl, '_blank')} className="flex items-center gap-2 border-2 border-[#0066cc] text-[#0066cc] text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-blue-50 transition-colors">
+                        <DownloadIcon className="w-4 h-4" />ดาวน์โหลดโปรแกรม
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -147,67 +122,6 @@ export default function TourDetailPage() {
             </div>
           </div>
         </section>
-      </div>
-
-      {/* Print content - hidden on screen, visible on print */}
-      <div id="print-content">
-        <div style={{ fontFamily: "'Noto Sans Thai', 'Sarabun', sans-serif", padding: '30px', color: '#333' }}>
-          {/* Cover image */}
-          <img src={img} alt={tour.title} style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '8px', marginBottom: '20px' }} />
-
-          {/* Title */}
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '12px', color: '#0066cc' }}>{tour.title}</h1>
-
-          {/* Info */}
-          <table style={{ width: '100%', fontSize: '13px', marginBottom: '16px', borderCollapse: 'collapse' }}>
-            <tbody>
-              <tr>
-                <td style={{ padding: '4px 12px 4px 0', color: '#666' }}>จุดหมาย:</td>
-                <td style={{ padding: '4px 0', fontWeight: 'bold' }}>{tour.destination}</td>
-                <td style={{ padding: '4px 12px 4px 24px', color: '#666' }}>จำนวนวัน:</td>
-                <td style={{ padding: '4px 0', fontWeight: 'bold' }}>{tour.duration} วัน</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '4px 12px 4px 0', color: '#666' }}>จุดออกเดินทาง:</td>
-                <td style={{ padding: '4px 0', fontWeight: 'bold' }}>{tour.departure}</td>
-                <td style={{ padding: '4px 12px 4px 24px', color: '#666' }}>ราคา:</td>
-                <td style={{ padding: '4px 0', fontWeight: 'bold', color: '#0066cc' }}>฿{tour.price.toLocaleString()} /ท่าน</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <hr style={{ margin: '16px 0', borderColor: '#ddd' }} />
-
-          {/* Description */}
-          {tour.description && (
-            <div style={{ marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>ไฮไลท์ทริป</h2>
-              <p style={{ lineHeight: '1.8', fontSize: '14px' }}>{tour.description}</p>
-            </div>
-          )}
-
-          {/* Itinerary */}
-          {tour.itinerary && tour.itinerary.length > 0 && (
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px' }}>กำหนดการเดินทาง</h2>
-              {tour.itinerary.map(day => (
-                <div key={day.day} style={{ marginBottom: '16px', paddingLeft: '12px', borderLeft: '3px solid #0066cc' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '6px' }}>วันที่ {day.day}: {day.title}</h3>
-                  <ul style={{ paddingLeft: '20px', margin: '0 0 6px 0' }}>
-                    {day.activities.map((a, i) => (
-                      <li key={i} style={{ fontSize: '13px', marginBottom: '3px' }}>{a}</li>
-                    ))}
-                  </ul>
-                  {day.meals.length > 0 && <p style={{ fontSize: '12px', color: '#666' }}>มื้ออาหาร: {day.meals.join(', ')}</p>}
-                  {day.accommodation && <p style={{ fontSize: '12px', color: '#666' }}>ที่พัก: {day.accommodation}</p>}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <hr style={{ margin: '20px 0', borderColor: '#ddd' }} />
-          <p style={{ fontSize: '11px', color: '#999', textAlign: 'center' }}>Seacare Travel — {tour.title}</p>
-        </div>
       </div>
     </>
   );

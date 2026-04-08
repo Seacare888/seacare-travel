@@ -33,6 +33,7 @@ export const tour = pgTable('tour', {
   tags: text('tags').array().default([]),
   status: varchar('status', { length: 50 }).default('active'),
   featured: boolean('featured').default(false),
+  programUrl: text('program_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
