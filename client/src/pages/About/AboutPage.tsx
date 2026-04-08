@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PhoneIcon, MailIcon, MapPinIcon, ClockIcon } from 'lucide-react';
+import { PhoneIcon, MailIcon, MapPinIcon, ClockIcon, EyeIcon, TargetIcon } from 'lucide-react';
 import { getSettings, type SiteSettings } from '../../api/settings';
 import { getTeamMembers, type ITeamMember } from '../../api/team';
 
@@ -22,9 +22,28 @@ export default function AboutPage() {
     <div>
       <div className="bg-gradient-to-br from-[#0066cc] to-[#0052a3] py-16 px-4 text-center">
         <h1 className="text-3xl font-black text-white mb-2">เกี่ยวกับเรา</h1>
-        <p className="text-white/80 max-w-xl mx-auto">Seacare Travel — ผู้ให้บริการท่องเที่ยวระดับมืออาชีพ มุ่งมั่นสร้างประสบการณ์ที่น่าจดจำ</p>
+        <p className="text-white/80 max-w-xl mx-auto">{s?.company_name || 'Seacare Travel'} — {s?.company_slogan || 'ผู้ให้บริการท่องเที่ยวระดับมืออาชีพ มุ่งมั่นสร้างประสบการณ์ที่น่าจดจำ'}</p>
       </div>
       <div className="max-w-6xl mx-auto px-4 py-12 space-y-14">
+        {/* About Intro */}
+        <section className="max-w-3xl mx-auto text-center">
+          <p className="text-gray-600 text-lg leading-relaxed">{s?.about_intro || 'Seacare Travel ก่อตั้งขึ้นด้วยความมุ่งมั่นที่จะให้บริการท่องเที่ยวคุณภาพสูง เราดูแลลูกค้าทุกคนเสมือนครอบครัว ด้วยประสบการณ์กว่า 10 ปี'}</p>
+        </section>
+
+        {/* Vision & Mission */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4"><EyeIcon className="w-6 h-6 text-[#0066cc]" /></div>
+            <h3 className="font-bold text-gray-800 mb-2">วิสัยทัศน์</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{s?.about_vision || 'มุ่งมั่นเป็นบริษัทท่องเที่ยวชั้นนำที่ลูกค้าไว้วางใจมากที่สุดในประเทศไทย'}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4"><TargetIcon className="w-6 h-6 text-[#0066cc]" /></div>
+            <h3 className="font-bold text-gray-800 mb-2">พันธกิจ</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{s?.about_mission || 'สร้างประสบการณ์การเดินทางที่น่าจดจำ ด้วยบริการที่เป็นเลิศและราคาที่คุ้มค่า'}</p>
+          </div>
+        </section>
+
         {/* Team */}
         <section>
           <h2 className="text-2xl font-black text-gray-800 mb-8 text-center">ทีมผู้บริหาร</h2>

@@ -6,7 +6,7 @@ import { getSettings, type SiteSettings } from '../../api/settings';
 import { getTestimonials, type ITestimonial } from '../../api/testimonial';
 import type { ITour, IDestination } from '../../types';
 
-const HERO = 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=80';
+const DEFAULT_HERO = 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=80';
 
 const FEATURES = [
   { icon: ShieldCheckIcon, title: 'คุณภาพรับประกัน', desc: 'คัดสรรพาร์ทเนอร์อย่างเข้มงวด เดินทางอย่างมั่นใจ' },
@@ -82,11 +82,11 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${HERO})` }} />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${settings?.hero_image || DEFAULT_HERO})` }} />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-gray-50" />
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto pt-8">
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-5 leading-tight drop-shadow-md">ท่องเที่ยวรอบโลก<br />ไปกับ Seacare</h1>
-          <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">ผู้ให้บริการท่องเที่ยวระดับโลก สร้างประสบการณ์การเดินทางที่น่าจดจำสู่กว่า 50 ประเทศทั่วโลก</p>
+          <h1 className="text-4xl md:text-6xl font-black text-white mb-5 leading-tight drop-shadow-md whitespace-pre-line">{settings?.hero_title || 'ท่องเที่ยวรอบโลก\nไปกับ Seacare'}</h1>
+          <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">{settings?.hero_subtitle || 'ผู้ให้บริการท่องเที่ยวระดับโลก สร้างประสบการณ์การเดินทางที่น่าจดจำสู่กว่า 50 ประเทศทั่วโลก'}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button onClick={() => nav('/tours')} className="bg-[#0066cc] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#0052a3] transition-all hover:shadow-lg">สำรวจแพ็คเกจทัวร์</button>
             <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition-all">ปรึกษาตอนนี้</button>

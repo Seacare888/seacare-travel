@@ -40,7 +40,7 @@ export default function AdminPage() {
   const [tf, setTf] = useState({ title: '', description: '', destination: '', region: 'asia', duration: 5, price: 0, departure: 'กรุงเทพฯ', coverImage: '', tags: '', status: 'active', featured: false, programUrl: '' });
   const [sf, setSf] = useState({ username: '', password: '', name: '', role: 'staff' });
   const [df, setDf] = useState({ name: '', nameEn: '', region: 'asia' });
-  const [siteSettings, setSiteSettings] = useState<SiteSettings>({ phone: '', email: '', address: '', line_id: '', facebook_url: '', business_hours: '' });
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({ phone: '', email: '', address: '', line_id: '', facebook_url: '', business_hours: '', company_name: '', company_slogan: '', about_intro: '', about_vision: '', about_mission: '', hero_title: '', hero_subtitle: '', hero_image: '' });
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [teamMembers, setTeamMembers] = useState<ITeamMember[]>([]);
   const [teamDialog, setTeamDialog] = useState(false);
@@ -393,36 +393,88 @@ export default function AdminPage() {
 
         {/* Settings Tab */}
         {tab === 'settings' && (
-          <div className="max-w-2xl">
-            <h2 className="text-lg font-bold text-gray-800 mb-5">ข้อมูลติดต่อ</h2>
-            <form onSubmit={saveSettings} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+          <div className="max-w-2xl space-y-6">
+            <form onSubmit={saveSettings} className="space-y-6">
+              {/* Hero Settings */}
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">เบอร์โทรศัพท์</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.phone} onChange={e => setSiteSettings({...siteSettings, phone: e.target.value})} />
+                <h2 className="text-lg font-bold text-gray-800 mb-4">หน้าแรก (Hero)</h2>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">หัวข้อหลัก</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.hero_title} onChange={e => setSiteSettings({...siteSettings, hero_title: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">หัวข้อรอง</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.hero_subtitle} onChange={e => setSiteSettings({...siteSettings, hero_subtitle: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">รูปพื้นหลัง (URL)</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" placeholder="https://..." value={siteSettings.hero_image} onChange={e => setSiteSettings({...siteSettings, hero_image: e.target.value})} />
+                  </div>
+                </div>
               </div>
+
+              {/* Company Info */}
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">อีเมล</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.email} onChange={e => setSiteSettings({...siteSettings, email: e.target.value})} />
+                <h2 className="text-lg font-bold text-gray-800 mb-4">ข้อมูลบริษัท</h2>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">ชื่อบริษัท</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.company_name} onChange={e => setSiteSettings({...siteSettings, company_name: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">สโลแกน</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.company_slogan} onChange={e => setSiteSettings({...siteSettings, company_slogan: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">แนะนำบริษัท (เกี่ยวกับเรา)</label>
+                    <textarea className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc] resize-none h-20" value={siteSettings.about_intro} onChange={e => setSiteSettings({...siteSettings, about_intro: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">วิสัยทัศน์</label>
+                    <textarea className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc] resize-none h-16" value={siteSettings.about_vision} onChange={e => setSiteSettings({...siteSettings, about_vision: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">พันธกิจ</label>
+                    <textarea className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc] resize-none h-16" value={siteSettings.about_mission} onChange={e => setSiteSettings({...siteSettings, about_mission: e.target.value})} />
+                  </div>
+                </div>
               </div>
+
+              {/* Contact Info */}
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">ที่อยู่</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.address} onChange={e => setSiteSettings({...siteSettings, address: e.target.value})} />
+                <h2 className="text-lg font-bold text-gray-800 mb-4">ข้อมูลติดต่อ</h2>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">เบอร์โทรศัพท์</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.phone} onChange={e => setSiteSettings({...siteSettings, phone: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">อีเมล</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.email} onChange={e => setSiteSettings({...siteSettings, email: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">ที่อยู่</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.address} onChange={e => setSiteSettings({...siteSettings, address: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">LINE ID</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.line_id} onChange={e => setSiteSettings({...siteSettings, line_id: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Facebook URL</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.facebook_url} onChange={e => setSiteSettings({...siteSettings, facebook_url: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">เวลาทำการ</label>
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.business_hours} onChange={e => setSiteSettings({...siteSettings, business_hours: e.target.value})} />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">LINE ID</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.line_id} onChange={e => setSiteSettings({...siteSettings, line_id: e.target.value})} />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">Facebook URL</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.facebook_url} onChange={e => setSiteSettings({...siteSettings, facebook_url: e.target.value})} />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">เวลาทำการ</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={siteSettings.business_hours} onChange={e => setSiteSettings({...siteSettings, business_hours: e.target.value})} />
-              </div>
-              <div className="flex justify-end pt-2 border-t border-gray-100">
+
+              <div className="flex justify-end">
                 <button type="submit" disabled={settingsSaving} className="px-5 py-2 bg-[#0066cc] text-white rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3] disabled:opacity-60">
-                  {settingsSaving ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <SaveIcon className="w-4 h-4" />}บันทึก
+                  {settingsSaving ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <SaveIcon className="w-4 h-4" />}บันทึกทั้งหมด
                 </button>
               </div>
             </form>
