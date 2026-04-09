@@ -68,6 +68,19 @@ export const testimonial = pgTable('testimonial', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const tourDeparture = pgTable('tour_departure', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  tourId: uuid('tour_id').notNull().references(() => tour.id, { onDelete: 'cascade' }),
+  departureDate: varchar('departure_date', { length: 20 }).notNull(),
+  returnDate: varchar('return_date', { length: 20 }),
+  originalPrice: integer('original_price'),
+  promoPrice: integer('promo_price').notNull(),
+  seatsLeft: integer('seats_left').default(0),
+  status: varchar('status', { length: 50 }).default('available'),
+  note: varchar('note', { length: 255 }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export const tourItinerary = pgTable('tour_itinerary', {
   id: uuid('id').defaultRandom().primaryKey(),
   tourId: uuid('tour_id').notNull().references(() => tour.id, { onDelete: 'cascade' }),

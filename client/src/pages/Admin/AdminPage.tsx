@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusIcon, PencilIcon, Trash2Icon, LogOutIcon, UsersIcon, MessageCircleIcon, SearchIcon, Loader2Icon, SaveIcon, XIcon, SettingsIcon } from 'lucide-react';
+import { PlusIcon, PencilIcon, Trash2Icon, LogOutIcon, UsersIcon, MessageCircleIcon, SearchIcon, Loader2Icon, SaveIcon, XIcon, SettingsIcon, PlaneIcon } from 'lucide-react';
 import { getTours, createTour, updateTour, deleteTour, getDestinations, createDestination, deleteDestination } from '../../api/tour';
 import { getAllStaff, createStaff, updateStaff, deleteStaff } from '../../api/staff';
 import { getSettings, updateSettings, type SiteSettings } from '../../api/settings';
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, type ITeamMember } from '../../api/team';
 import { getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial, type ITestimonial } from '../../api/testimonial';
+import { getDepartures, createDeparture, updateDeparture, deleteDeparture, type IDeparture } from '../../api/departure';
 import { useAuth } from '../../hooks/useAuth';
 import type { ITour, IDestination, IStaff } from '../../types';
 import { toast } from 'sonner';
@@ -19,7 +20,7 @@ const REGIONS = [
   { value: 'middle-east', label: 'ตะวันออกกลาง' },
 ];
 
-type Tab = 'tours' | 'destinations' | 'staff' | 'chat' | 'settings' | 'team' | 'testimonials';
+type Tab = 'tours' | 'destinations' | 'staff' | 'chat' | 'settings' | 'team' | 'testimonials' | 'departures';
 
 export default function AdminPage() {
   const { user, isAdmin, logout } = useAuth();
@@ -50,12 +51,16 @@ export default function AdminPage() {
   const [testimonialDialog, setTestimonialDialog] = useState(false);
   const [editTestimonial, setEditTestimonial] = useState<ITestimonial | null>(null);
   const [rvf, setRvf] = useState({ customerName: '', avatarUrl: '', content: '', rating: 5, tourName: '', sortOrder: 0, status: 'active' });
+  const [departuresList, setDeparturesList] = useState<IDeparture[]>([]);
+  const [departureDialog, setDepartureDialog] = useState(false);
+  const [editDeparture, setEditDeparture] = useState<IDeparture | null>(null);
+  const [depf, setDepf] = useState({ tourId: '', departureDate: '', returnDate: '', originalPrice: 0, promoPrice: 0, seatsLeft: 0, status: 'available', note: '' });
 
   const load = async () => {
     setLoading(true);
     try {
-      const [t, d, s, st, tm, rv] = await Promise.all([getTours({}), getDestinations({}), getAllStaff(), getSettings(), getTeamMembers(), getTestimonials()]);
-      setTours(t); setDestinations(d); setStaff(s); setSiteSettings(st); setTeamMembers(tm); setTestimonialsList(rv);
+      const [t, d, s, st, tm, rv, dep] = await Promise.all([getTours({}), getDestinations({}), getAllStaff(), getSettings(), getTeamMembers(), getTestimonials(), getDepartures()]);
+      setTours(t); setDestinations(d); setStaff(s); setSiteSettings(st); setTeamMembers(tm); setTestimonialsList(rv); setDeparturesList(dep);
     } catch { toast.error('โหลดข้อมูลไม่สำเร็จ'); }
     finally { setLoading(false); }
   };
@@ -120,6 +125,7 @@ export default function AdminPage() {
     { id: 'chat', label: 'แชท', icon: MessageCircleIcon },
     { id: 'team', label: 'ทีมงาน', icon: UsersIcon },
     { id: 'testimonials', label: 'รีวิว', icon: MessageCircleIcon },
+    { id: 'departures', label: 'กรุ๊ปออกเดินทาง', icon: PlaneIcon },
     { id: 'settings', label: 'ตั้งค่า', icon: SettingsIcon },
   ];
 
@@ -175,6 +181,33 @@ export default function AdminPage() {
   const delTestimonial = async (id: string) => {
     if (!confirm('ยืนยันการลบ?')) return;
     try { await deleteTestimonial(id); toast.success('ลบสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
+  };
+
+  const openDepartureCreate = () => {
+    setEditDeparture(null);
+    setDepf({ tourId: tours[0]?.id || '', departureDate: '', returnDate: '', originalPrice: 0, promoPrice: 0, seatsLeft: 0, status: 'available', note: '' });
+    setDepartureDialog(true);
+  };
+
+  const openDepartureEdit = (d: IDeparture) => {
+    setEditDeparture(d);
+    setDepf({ tourId: d.tourId, departureDate: d.departureDate, returnDate: d.returnDate || '', originalPrice: d.originalPrice || 0, promoPrice: d.promoPrice, seatsLeft: d.seatsLeft, status: d.status, note: d.note || '' });
+    setDepartureDialog(true);
+  };
+
+  const saveDeparture = async (e: React.FormEvent) => {
+    e.preventDefault(); setSubmitting(true);
+    try {
+      const data = { ...depf, originalPrice: Number(depf.originalPrice) || null, promoPrice: Number(depf.promoPrice), seatsLeft: Number(depf.seatsLeft) };
+      if (editDeparture) { await updateDeparture(editDeparture.id, data); toast.success('แก้ไขสำเร็จ'); }
+      else { await createDeparture(data); toast.success('เพิ่มกรุ๊ปสำเร็จ'); }
+      setDepartureDialog(false); load();
+    } catch { toast.error('เกิดข้อผิดพลาด'); } finally { setSubmitting(false); }
+  };
+
+  const delDeparture = async (id: string) => {
+    if (!confirm('ยืนยันการลบ?')) return;
+    try { await deleteDeparture(id); toast.success('ลบสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
   };
 
   const saveSettings = async (e: React.FormEvent) => {
@@ -387,6 +420,52 @@ export default function AdminPage() {
                 </tbody>
               </table>
               {testimonialsList.length === 0 && <p className="text-center py-10 text-gray-400 text-sm">ไม่มีรีวิว</p>}
+            </div>
+          </>
+        )}
+
+        {/* Departures Tab */}
+        {tab === 'departures' && (
+          <>
+            <div className="flex justify-end mb-5">
+              <button onClick={openDepartureCreate} className="bg-[#0066cc] text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3]"><PlusIcon className="w-4 h-4" />เพิ่มกรุ๊ป</button>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50 text-xs text-gray-500 font-semibold uppercase">
+                  <tr><th className="px-4 py-3 text-left">แพ็คเกจ</th><th className="px-4 py-3 text-left hidden md:table-cell">วันออกเดินทาง</th><th className="px-4 py-3 text-left hidden sm:table-cell">ราคาโปร</th><th className="px-4 py-3 text-left hidden sm:table-cell">ที่เหลือ</th><th className="px-4 py-3 text-left hidden sm:table-cell">สถานะ</th><th className="px-4 py-3 text-right">จัดการ</th></tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {departuresList.map(d => (
+                    <tr key={d.id} className="hover:bg-gray-50/50">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-sm text-gray-800 line-clamp-1">{d.tourTitle || '-'}</p>
+                        <p className="text-xs text-gray-400">{d.tourDestination}</p>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-600">{d.departureDate}{d.returnDate ? ` — ${d.returnDate}` : ''}</td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <div>
+                          {d.originalPrice ? <span className="text-xs text-gray-400 line-through mr-1">฿{d.originalPrice.toLocaleString()}</span> : null}
+                          <span className="text-sm font-semibold text-red-600">฿{d.promoPrice.toLocaleString()}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-600">{d.seatsLeft} ที่นั่ง</td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${d.status === 'available' ? 'bg-green-100 text-green-700' : d.status === 'full' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {d.status === 'available' ? 'ว่าง' : d.status === 'full' ? 'เต็ม' : 'ยกเลิก'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openDepartureEdit(d)} className="p-1.5 text-gray-400 hover:text-[#0066cc] hover:bg-blue-50 rounded-lg"><PencilIcon className="w-4 h-4" /></button>
+                          {isAdmin && <button onClick={() => delDeparture(d.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2Icon className="w-4 h-4" /></button>}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {departuresList.length === 0 && <p className="text-center py-10 text-gray-400 text-sm">ไม่มีกรุ๊ปออกเดินทาง</p>}
             </div>
           </>
         )}
@@ -608,6 +687,49 @@ export default function AdminPage() {
               </div>
               <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
                 <button type="button" onClick={() => setTeamDialog(false)} className="px-5 py-2 border border-gray-200 rounded-full text-sm text-gray-600">ยกเลิก</button>
+                <button type="submit" disabled={submitting} className="px-5 py-2 bg-[#0066cc] text-white rounded-full text-sm font-semibold flex items-center gap-1.5 disabled:opacity-60">
+                  {submitting ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <SaveIcon className="w-4 h-4" />}บันทึก
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Departure Dialog */}
+      {departureDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDepartureDialog(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-gray-800">{editDeparture ? 'แก้ไขกรุ๊ป' : 'เพิ่มกรุ๊ปใหม่'}</h3>
+              <button onClick={() => setDepartureDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <form onSubmit={saveDeparture} className="p-5 space-y-3">
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">แพ็คเกจ *</label>
+                <select required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.tourId} onChange={e => setDepf({...depf, tourId: e.target.value})}>
+                  <option value="">เลือกแพ็คเกจ</option>
+                  {tours.map(t => <option key={t.id} value={t.id}>{t.title} ({t.destination})</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">วันออกเดินทาง *</label><input required type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.departureDate} onChange={e => setDepf({...depf, departureDate: e.target.value})} /></div>
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">วันกลับ</label><input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.returnDate} onChange={e => setDepf({...depf, returnDate: e.target.value})} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">ราคาเดิม (บาท)</label><input type="number" min={0} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.originalPrice} onChange={e => setDepf({...depf, originalPrice: Number(e.target.value)})} /></div>
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">ราคาโปร (บาท) *</label><input required type="number" min={0} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.promoPrice} onChange={e => setDepf({...depf, promoPrice: Number(e.target.value)})} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">ที่นั่งเหลือ</label><input type="number" min={0} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.seatsLeft} onChange={e => setDepf({...depf, seatsLeft: Number(e.target.value)})} /></div>
+                <div><label className="text-xs font-medium text-gray-600 block mb-1">สถานะ</label>
+                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.status} onChange={e => setDepf({...depf, status: e.target.value})}>
+                    <option value="available">ว่าง</option><option value="full">เต็ม</option><option value="cancelled">ยกเลิก</option>
+                  </select>
+                </div>
+              </div>
+              <div><label className="text-xs font-medium text-gray-600 block mb-1">หมายเหตุ</label><input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066cc]" value={depf.note} onChange={e => setDepf({...depf, note: e.target.value})} /></div>
+              <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+                <button type="button" onClick={() => setDepartureDialog(false)} className="px-5 py-2 border border-gray-200 rounded-full text-sm text-gray-600">ยกเลิก</button>
                 <button type="submit" disabled={submitting} className="px-5 py-2 bg-[#0066cc] text-white rounded-full text-sm font-semibold flex items-center gap-1.5 disabled:opacity-60">
                   {submitting ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <SaveIcon className="w-4 h-4" />}บันทึก
                 </button>

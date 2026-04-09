@@ -15,6 +15,11 @@ export interface IDestination {
 export interface IStaff {
   id: string; username: string; name: string; role: string; status?: string; createdAt?: string;
 }
+export interface IDeparture {
+  id: string; tourId: string; departureDate: string; returnDate?: string;
+  originalPrice?: number; promoPrice: number; seatsLeft: number;
+  status: string; note?: string; tourTitle?: string; tourDestination?: string; tourCoverImage?: string;
+}
 export interface ChatMessage {
   id: string; sessionId: string; role: 'user'|'ai'|'staff';
   content: string; timestamp: string; staffName?: string;

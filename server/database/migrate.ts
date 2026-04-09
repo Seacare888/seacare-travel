@@ -155,6 +155,21 @@ export async function runMigration() {
     `;
   }
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS tour_departure (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      tour_id UUID REFERENCES tour(id) ON DELETE CASCADE,
+      departure_date VARCHAR(20) NOT NULL,
+      return_date VARCHAR(20),
+      original_price INTEGER,
+      promo_price INTEGER NOT NULL,
+      seats_left INTEGER DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'available',
+      note VARCHAR(255),
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   await sql.end();
   console.log('Migration complete.');
 }

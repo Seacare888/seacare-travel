@@ -4,6 +4,7 @@ import { MapPinIcon, ClockIcon, StarIcon, ShieldCheckIcon, HeartIcon, SearchIcon
 import { getTours, getDestinations } from '../../api/tour';
 import { getSettings, type SiteSettings } from '../../api/settings';
 import { getTestimonials, type ITestimonial } from '../../api/testimonial';
+import { getUpcomingDepartures, type IDeparture } from '../../api/departure';
 import type { ITour, IDestination } from '../../types';
 
 const DEFAULT_HERO = 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=80';
@@ -54,10 +55,11 @@ export default function HomePage() {
   const [tIdx, setTIdx] = useState(0);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [testimonials, setTestimonials] = useState<ITestimonial[]>([]);
+  const [departures, setDepartures] = useState<IDeparture[]>([]);
   useEffect(() => {
     document.title = 'Seacare Travel - ท่องเที่ยวรอบโลก';
-    Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' }), getSettings(), getTestimonials('active')])
-      .then(([t, d, s, r]) => { setTours(t); setDestinations(d); setSettings(s); setTestimonials(r); })
+    Promise.all([getTours({ status: 'active' }), getDestinations({ status: 'active' }), getSettings(), getTestimonials('active'), getUpcomingDepartures()])
+      .then(([t, d, s, r, dep]) => { setTours(t); setDestinations(d); setSettings(s); setTestimonials(r); setDepartures(dep); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -94,6 +96,54 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Upcoming Departures */}
+      {departures.length > 0 && (
+        <section className="py-12 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="inline-block bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold px-6 py-2 rounded-full mb-3">โปรไฟใหม่ ที่ยังจองได้ วันนี้</div>
+              <h2 className="text-3xl font-black text-gray-800">กรุ๊ปออกเดินทางเร็วๆ นี้</h2>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-semibold uppercase">
+                  <tr>
+                    <th className="px-4 py-3 text-left">#</th>
+                    <th className="px-4 py-3 text-left">จุดหมาย</th>
+                    <th className="px-4 py-3 text-left">แพ็คเกจ</th>
+                    <th className="px-4 py-3 text-left">วันออกเดินทาง</th>
+                    <th className="px-4 py-3 text-right">ราคาเดิม</th>
+                    <th className="px-4 py-3 text-right">ราคาโปร</th>
+                    <th className="px-4 py-3 text-center">สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {departures.map((d, i) => (
+                    <tr key={d.id} className="hover:bg-orange-50/50 transition-colors">
+                      <td className="px-4 py-3 text-gray-500 font-medium">{i + 1}</td>
+                      <td className="px-4 py-3 font-medium text-gray-800">{d.tourDestination || '-'}</td>
+                      <td className="px-4 py-3 text-gray-700">{d.tourTitle || '-'}</td>
+                      <td className="px-4 py-3 text-gray-600">{d.departureDate}</td>
+                      <td className="px-4 py-3 text-right">
+                        {d.originalPrice ? <span className="line-through text-gray-400">฿{d.originalPrice.toLocaleString()}</span> : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-red-600">฿{d.promoPrice.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-center">
+                        {d.status === 'full' ? (
+                          <span className="bg-gray-200 text-gray-500 text-xs font-bold px-3 py-1 rounded-full">เต็ม</span>
+                        ) : (
+                          <button onClick={() => nav('/tours/' + d.tourId)} className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-4 py-1.5 rounded-full hover:shadow-md transition-shadow">จอง</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Tours */}
       <section className="py-16 px-4 max-w-6xl mx-auto">
