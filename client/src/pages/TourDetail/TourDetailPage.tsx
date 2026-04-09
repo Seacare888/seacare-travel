@@ -75,7 +75,7 @@ export default function TourDetailPage() {
               {tour.description && (
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                   <h2 className="text-lg font-bold text-gray-800 mb-3">ไฮไลท์ทริป</h2>
-                  <p className="text-gray-600 leading-relaxed">{tour.description}</p>
+                  <p className="text-gray-600 leading-relaxed whitespace-pre-line">{tour.description}</p>
                   <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100">
                     <button onClick={handleDownloadImage} className="flex items-center gap-2 bg-[#0066cc] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-[#0052a3] transition-colors">
                       <ImageIcon className="w-4 h-4" />ดาวน์โหลดภาพโปรแกรม
