@@ -105,12 +105,12 @@ export default function HomePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {departures.map((d, i) => (
+                  {departures.filter(d => d.status === 'available').map((d, i) => (
                     <tr key={d.id} className="hover:bg-orange-50/50 transition-colors">
                       <td className="px-4 py-3 text-gray-500 font-medium">{i + 1}</td>
                       <td className="px-4 py-3 font-medium text-gray-800">{d.tourDestination || '-'}</td>
                       <td className="px-4 py-3 text-gray-700">{d.tourTitle || '-'}</td>
-                      <td className="px-4 py-3 text-gray-600">{d.departureDate}</td>
+                      <td className="px-4 py-3 text-gray-600">{d.departureDate}{d.returnDate ? ` — ${d.returnDate}` : ''}</td>
                       <td className="px-4 py-3 text-right">
                         {d.originalPrice ? <span className="line-through text-gray-400">฿{d.originalPrice.toLocaleString()}</span> : '-'}
                       </td>

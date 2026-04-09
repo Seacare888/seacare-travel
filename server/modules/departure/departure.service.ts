@@ -55,7 +55,7 @@ export class DepartureService {
         and(
           gte(tourDeparture.departureDate, today),
           lte(tourDeparture.departureDate, future),
-          ne(tourDeparture.status, 'full'),
+          eq(tourDeparture.status, 'available'),
         ),
       )
       .orderBy(asc(tourDeparture.departureDate));
