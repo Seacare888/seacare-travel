@@ -92,8 +92,8 @@ export default function AdminPage() {
   };
 
   const delTour = async (id: string) => {
-    if (!confirm('ยืนยันการลบ?')) return;
-    try { await deleteTour(id); toast.success('ลบสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
+    if (!confirm('ยืนยันการลบแพ็คเกจ?')) return;
+    try { await deleteTour(id); toast.success('ลบแพ็คเกจสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
   };
 
   const saveStaff = async (e: React.FormEvent) => {
