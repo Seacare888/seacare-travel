@@ -20,6 +20,12 @@ export class TourController {
       .then(d => ({ success: true, data: d }));
   }
 
+  @Get('trash')
+  @UseGuards(AuthGuard)
+  findDeleted() {
+    return this.s.findDeleted().then(d => ({ success: true, data: d }));
+  }
+
   @Get(':id/detail')
   async detail(@Param('id') id: string) {
     const d = await this.s.findWithItinerary(id);
@@ -51,7 +57,23 @@ export class TourController {
   @Delete(':id')
   @UseGuards(AuthGuard)
   async delete(@Param('id') id: string) {
-    const d = await this.s.delete(id);
+    const d = await this.s.softDelete(id);
+    if (!d) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    return { success: true };
+  }
+
+  @Post(':id/restore')
+  @UseGuards(AuthGuard)
+  async restore(@Param('id') id: string) {
+    const d = await this.s.restore(id);
+    if (!d) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    return { success: true, data: d };
+  }
+
+  @Delete(':id/hard')
+  @UseGuards(AuthGuard)
+  async hardDelete(@Param('id') id: string) {
+    const d = await this.s.hardDelete(id);
     if (!d) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     return { success: true };
   }

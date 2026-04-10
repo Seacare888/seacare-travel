@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusIcon, PencilIcon, Trash2Icon, LogOutIcon, UsersIcon, MessageCircleIcon, SearchIcon, Loader2Icon, SaveIcon, XIcon, SettingsIcon, PlaneIcon } from 'lucide-react';
-import { getTours, createTour, updateTour, deleteTour, getDestinations, createDestination, deleteDestination } from '../../api/tour';
+import { PlusIcon, PencilIcon, Trash2Icon, LogOutIcon, UsersIcon, MessageCircleIcon, SearchIcon, Loader2Icon, SaveIcon, XIcon, SettingsIcon, PlaneIcon, ArchiveRestoreIcon } from 'lucide-react';
+import { getTours, createTour, updateTour, deleteTour, getDeletedTours, restoreTour, hardDeleteTour, getDestinations, createDestination, deleteDestination } from '../../api/tour';
 import { getAllStaff, createStaff, updateStaff, deleteStaff } from '../../api/staff';
 import { getSettings, updateSettings, type SiteSettings } from '../../api/settings';
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, type ITeamMember } from '../../api/team';
@@ -55,6 +55,8 @@ export default function AdminPage() {
   const [departureDialog, setDepartureDialog] = useState(false);
   const [editDeparture, setEditDeparture] = useState<IDeparture | null>(null);
   const [depf, setDepf] = useState({ tourId: '', departureDate: '', returnDate: '', originalPrice: 0, promoPrice: 0, seatsLeft: 0, status: 'available', note: '' });
+  const [showTrash, setShowTrash] = useState(false);
+  const [deletedTours, setDeletedTours] = useState<ITour[]>([]);
 
   const load = async () => {
     setLoading(true);
@@ -93,7 +95,21 @@ export default function AdminPage() {
 
   const delTour = async (id: string) => {
     if (!confirm('ยืนยันการลบแพ็คเกจ?')) return;
-    try { await deleteTour(id); toast.success('ลบแพ็คเกจสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
+    try { await deleteTour(id); toast.success('ย้ายไปถังขยะสำเร็จ'); load(); loadTrash(); } catch { toast.error('ลบไม่สำเร็จ'); }
+  };
+
+  const loadTrash = async () => {
+    try { const d = await getDeletedTours(); setDeletedTours(d); } catch { /* ignore */ }
+  };
+
+  const handleRestore = async (id: string) => {
+    if (!confirm('ยืนยันการกู้คืนแพ็คเกจ?')) return;
+    try { await restoreTour(id); toast.success('กู้คืนแพ็คเกจสำเร็จ'); load(); loadTrash(); } catch { toast.error('กู้คืนไม่สำเร็จ'); }
+  };
+
+  const handleHardDelete = async (id: string) => {
+    if (!confirm('ลบถาวร? ไม่สามารถกู้คืนได้')) return;
+    try { await hardDeleteTour(id); toast.success('ลบถาวรสำเร็จ'); loadTrash(); } catch { toast.error('ลบไม่สำเร็จ'); }
   };
 
   const saveStaff = async (e: React.FormEvent) => {
@@ -254,7 +270,10 @@ export default function AdminPage() {
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#0066cc]" placeholder="ค้นหา..." value={search} onChange={e => setSearch(e.target.value)} />
               </div>
-              <button onClick={openTourCreate} className="bg-[#0066cc] text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3]"><PlusIcon className="w-4 h-4" />เพิ่มแพ็คเกจ</button>
+              <div className="flex items-center gap-2">
+                {isAdmin && <button onClick={() => { setShowTrash(!showTrash); if (!showTrash) loadTrash(); }} className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 border ${showTrash ? 'bg-red-50 border-red-200 text-red-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}><Trash2Icon className="w-4 h-4" />ถังขยะ{deletedTours.length > 0 && ` (${deletedTours.length})`}</button>}
+                <button onClick={openTourCreate} className="bg-[#0066cc] text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3]"><PlusIcon className="w-4 h-4" />เพิ่มแพ็คเกจ</button>
+              </div>
             </div>
             {loading ? <div className="text-center py-16"><Loader2Icon className="w-8 h-8 animate-spin text-[#0066cc] mx-auto" /></div> : (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -290,6 +309,39 @@ export default function AdminPage() {
                   </tbody>
                 </table>
                 {filteredTours.length === 0 && <p className="text-center py-10 text-gray-400 text-sm">ไม่พบข้อมูล</p>}
+              </div>
+            )}
+            {showTrash && isAdmin && (
+              <div className="mt-6">
+                <h3 className="text-sm font-bold text-red-600 mb-3 flex items-center gap-1.5"><Trash2Icon className="w-4 h-4" />ถังขยะ</h3>
+                <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-red-50 text-xs text-red-500 font-semibold uppercase">
+                      <tr><th className="px-4 py-3 text-left">แพ็คเกจ</th><th className="px-4 py-3 text-left hidden md:table-cell">จุดหมาย</th><th className="px-4 py-3 text-left hidden sm:table-cell">ราคา</th><th className="px-4 py-3 text-right">จัดการ</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {deletedTours.map(t => (
+                        <tr key={t.id} className="hover:bg-red-50/30">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <img src={t.coverImage || 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=80&q=60'} className="w-10 h-10 rounded-lg object-cover flex-shrink-0 opacity-60" alt="" />
+                              <div><p className="font-medium text-sm text-gray-500 line-clamp-1">{t.title}</p><p className="text-xs text-gray-400">{t.duration} วัน</p></div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-400">{t.destination}</td>
+                          <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-400">฿{t.price.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button onClick={() => handleRestore(t.id)} className="px-3 py-1 text-xs font-semibold text-green-600 bg-green-50 hover:bg-green-100 rounded-full flex items-center gap-1"><ArchiveRestoreIcon className="w-3.5 h-3.5" />กู้คืน</button>
+                              <button onClick={() => handleHardDelete(t.id)} className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-full flex items-center gap-1"><Trash2Icon className="w-3.5 h-3.5" />ลบถาวร</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {deletedTours.length === 0 && <p className="text-center py-10 text-gray-400 text-sm">ถังขยะว่างเปล่า</p>}
+                </div>
               </div>
             )}
           </>
@@ -563,8 +615,8 @@ export default function AdminPage() {
 
       {/* Tour Dialog */}
       {tourDialog && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setTourDialog(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editTour ? 'แก้ไขแพ็คเกจ' : 'เพิ่มแพ็คเกจใหม่'}</h3>
               <button onClick={() => setTourDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
@@ -613,8 +665,8 @@ export default function AdminPage() {
 
       {/* Staff Dialog */}
       {staffDialog && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setStaffDialog(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editStaff ? 'แก้ไขพนักงาน' : 'เพิ่มพนักงาน'}</h3>
               <button onClick={() => setStaffDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
@@ -641,8 +693,8 @@ export default function AdminPage() {
 
       {/* Destination Dialog */}
       {destDialog && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDestDialog(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-sm" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">เพิ่มจุดหมาย</h3>
               <button onClick={() => setDestDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
@@ -666,8 +718,8 @@ export default function AdminPage() {
 
       {/* Team Member Dialog */}
       {teamDialog && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setTeamDialog(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editTeamMember ? 'แก้ไขสมาชิก' : 'เพิ่มสมาชิก'}</h3>
               <button onClick={() => setTeamDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
@@ -698,8 +750,8 @@ export default function AdminPage() {
 
       {/* Departure Dialog */}
       {departureDialog && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDepartureDialog(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editDeparture ? 'แก้ไขกรุ๊ป' : 'เพิ่มกรุ๊ปใหม่'}</h3>
               <button onClick={() => setDepartureDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
@@ -741,8 +793,8 @@ export default function AdminPage() {
 
       {/* Testimonial Dialog */}
       {testimonialDialog && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setTestimonialDialog(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editTestimonial ? 'แก้ไขรีวิว' : 'เพิ่มรีวิว'}</h3>
               <button onClick={() => setTestimonialDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>

@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { eq, and, desc, asc, isNull, isNotNull } from 'drizzle-orm';
 import { DRIZZLE_DB } from '../../database/database.module';
 import { tour, tourItinerary, destination } from '../../database/schema';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -9,13 +9,12 @@ export class TourService {
   constructor(@Inject(DRIZZLE_DB) private db: PostgresJsDatabase) {}
 
   async findAll(params: { region?: string; destination?: string; status?: string; featured?: boolean }) {
-    const conds = [];
+    const conds = [isNull(tour.deletedAt)];
     if (params.region && params.region !== 'all') conds.push(eq(tour.region, params.region));
     if (params.destination) conds.push(eq(tour.destination, params.destination));
     if (params.status) conds.push(eq(tour.status, params.status));
     if (params.featured !== undefined) conds.push(eq(tour.featured, params.featured));
-    const q = conds.length ? this.db.select().from(tour).where(and(...conds)) : this.db.select().from(tour);
-    return q.orderBy(desc(tour.createdAt));
+    return this.db.select().from(tour).where(and(...conds)).orderBy(desc(tour.createdAt));
   }
 
   async findOne(id: string) {
@@ -54,7 +53,21 @@ export class TourService {
     return r[0] || null;
   }
 
-  async delete(id: string) {
+  async softDelete(id: string) {
+    const r = await this.db.update(tour).set({ deletedAt: new Date() }).where(eq(tour.id, id)).returning();
+    return r[0] || null;
+  }
+
+  async findDeleted() {
+    return this.db.select().from(tour).where(isNotNull(tour.deletedAt)).orderBy(desc(tour.deletedAt));
+  }
+
+  async restore(id: string) {
+    const r = await this.db.update(tour).set({ deletedAt: null }).where(eq(tour.id, id)).returning();
+    return r[0] || null;
+  }
+
+  async hardDelete(id: string) {
     const r = await this.db.delete(tour).where(eq(tour.id, id)).returning();
     return r[0] || null;
   }

@@ -78,6 +78,7 @@ export async function runMigration() {
   }
 
   await sql`ALTER TABLE tour ADD COLUMN IF NOT EXISTS program_url TEXT`;
+  await sql`ALTER TABLE tour ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS site_settings (

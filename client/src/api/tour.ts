@@ -31,6 +31,19 @@ export async function deleteTour(id: string): Promise<void> {
   await api.delete('/api/tours/' + id);
 }
 
+export async function getDeletedTours(): Promise<ITour[]> {
+  const r = await api.get('/api/tours/trash');
+  return r.data.data.map((t: any) => ({ ...t, coverImage: t.cover_image || t.coverImage }));
+}
+
+export async function restoreTour(id: string): Promise<void> {
+  await api.post('/api/tours/' + id + '/restore');
+}
+
+export async function hardDeleteTour(id: string): Promise<void> {
+  await api.delete('/api/tours/' + id + '/hard');
+}
+
 export async function getDestinations(p?: { region?: string; status?: string }): Promise<IDestination[]> {
   const params = new URLSearchParams();
   if (p?.status) params.set('status', p.status);
