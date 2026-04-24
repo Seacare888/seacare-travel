@@ -84,6 +84,14 @@ export class TourController {
     return this.s.createDestination(b).then(d => ({ success: true, data: d }));
   }
 
+  @Put('destinations/:id')
+  @UseGuards(AuthGuard)
+  async updateDest(@Param('id') id: string, @Body() b: any) {
+    const d = await this.s.updateDestination(id, b);
+    if (!d) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    return { success: true, data: d };
+  }
+
   @Delete('destinations/:id')
   @UseGuards(AuthGuard)
   async deleteDest(@Param('id') id: string) {

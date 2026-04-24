@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, PencilIcon, Trash2Icon, LogOutIcon, UsersIcon, MessageCircleIcon, SearchIcon, Loader2Icon, SaveIcon, XIcon, SettingsIcon, PlaneIcon, ArchiveRestoreIcon } from 'lucide-react';
-import { getTours, createTour, updateTour, deleteTour, getDeletedTours, restoreTour, hardDeleteTour, getDestinations, createDestination, deleteDestination } from '../../api/tour';
+import { getTours, createTour, updateTour, deleteTour, getDeletedTours, restoreTour, hardDeleteTour, getDestinations, createDestination, updateDestination, deleteDestination } from '../../api/tour';
 import { getAllStaff, createStaff, updateStaff, deleteStaff } from '../../api/staff';
 import { getSettings, updateSettings, type SiteSettings } from '../../api/settings';
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, type ITeamMember } from '../../api/team';
@@ -36,6 +36,7 @@ export default function AdminPage() {
   const [staffDialog, setStaffDialog] = useState(false);
   const [editStaff, setEditStaff] = useState<IStaff | null>(null);
   const [destDialog, setDestDialog] = useState(false);
+  const [editDest, setEditDest] = useState<IDestination | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [tf, setTf] = useState({ title: '', description: '', destination: '', region: 'asia', duration: 5, price: 0, departure: 'กรุงเทพฯ', coverImage: '', tags: '', status: 'active', featured: false, programUrl: '' });
@@ -126,10 +127,31 @@ export default function AdminPage() {
     try { await deleteStaff(id); toast.success('ลบสำเร็จ'); load(); } catch { toast.error('ลบไม่สำเร็จ'); }
   };
 
+  const openDestCreate = () => {
+    setEditDest(null);
+    setDf({ name: '', nameEn: '', region: 'asia' });
+    setDestDialog(true);
+  };
+
+  const openDestEdit = (d: IDestination) => {
+    setEditDest(d);
+    setDf({ name: d.name, nameEn: d.nameEn || '', region: d.region });
+    setDestDialog(true);
+  };
+
   const saveDest = async (e: React.FormEvent) => {
     e.preventDefault(); setSubmitting(true);
-    try { await createDestination(df as any); toast.success('เพิ่มจุดหมายสำเร็จ'); setDestDialog(false); load(); }
-    catch { toast.error('เกิดข้อผิดพลาด'); } finally { setSubmitting(false); }
+    try {
+      if (editDest) { await updateDestination(editDest.id, df); toast.success('แก้ไขจุดหมายสำเร็จ'); }
+      else { await createDestination(df as any); toast.success('เพิ่มจุดหมายสำเร็จ'); }
+      setDestDialog(false); load();
+    } catch { toast.error('เกิดข้อผิดพลาด'); } finally { setSubmitting(false); }
+  };
+
+  const delDest = async (id: string) => {
+    if (!confirm('ยืนยันการลบจุดหมาย?')) return;
+    try { await deleteDestination(id); toast.success('ลบจุดหมายสำเร็จ'); load(); }
+    catch { toast.error('ลบไม่สำเร็จ'); }
   };
 
   const filteredTours = tours.filter(t => t.title.toLowerCase().includes(search.toLowerCase()) || t.destination.toLowerCase().includes(search.toLowerCase()));
@@ -351,13 +373,19 @@ export default function AdminPage() {
         {tab === 'destinations' && (
           <>
             <div className="flex justify-end mb-5">
-              <button onClick={() => setDestDialog(true)} className="bg-[#0066cc] text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3]"><PlusIcon className="w-4 h-4" />เพิ่มจุดหมาย</button>
+              <button onClick={openDestCreate} className="bg-[#0066cc] text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 hover:bg-[#0052a3]"><PlusIcon className="w-4 h-4" />เพิ่มจุดหมาย</button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {destinations.map(d => (
                 <div key={d.id} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center justify-between">
-                  <div><p className="font-medium text-sm text-gray-800">{d.name}</p><p className="text-xs text-gray-400">{d.region}</p></div>
-                  {isAdmin && <button onClick={async () => { if (confirm('ลบ?')) { await deleteDestination(d.id); load(); } }} className="p-1.5 text-gray-300 hover:text-red-400"><Trash2Icon className="w-4 h-4" /></button>}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm text-gray-800 truncate">{d.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{d.nameEn ? `${d.nameEn} · ` : ''}{d.region}</p>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button onClick={() => openDestEdit(d)} className="p-1.5 text-gray-400 hover:text-[#0066cc] hover:bg-blue-50 rounded-lg"><PencilIcon className="w-4 h-4" /></button>
+                    {isAdmin && <button onClick={() => delDest(d.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2Icon className="w-4 h-4" /></button>}
+                  </div>
                 </div>
               ))}
             </div>
@@ -696,7 +724,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-800">เพิ่มจุดหมาย</h3>
+              <h3 className="font-bold text-gray-800">{editDest ? 'แก้ไขจุดหมาย' : 'เพิ่มจุดหมาย'}</h3>
               <button onClick={() => setDestDialog(false)}><XIcon className="w-5 h-5 text-gray-400" /></button>
             </div>
             <form onSubmit={saveDest} className="p-5 space-y-3">

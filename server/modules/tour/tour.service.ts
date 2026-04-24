@@ -90,6 +90,15 @@ export class TourService {
     return r[0];
   }
 
+  async updateDestination(id: string, data: any) {
+    const updates: any = {};
+    const fields = ['name','nameEn','region','status','sortOrder'];
+    for (const f of fields) if (data[f] !== undefined) updates[f] = data[f];
+    if (updates.sortOrder !== undefined) updates.sortOrder = Number(updates.sortOrder);
+    const r = await this.db.update(destination).set(updates).where(eq(destination.id, id)).returning();
+    return r[0] || null;
+  }
+
   async deleteDestination(id: string) {
     const r = await this.db.delete(destination).where(eq(destination.id, id)).returning();
     return r[0] || null;

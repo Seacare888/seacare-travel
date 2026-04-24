@@ -56,6 +56,11 @@ export async function createDestination(data: Partial<IDestination>): Promise<ID
   return r.data.data;
 }
 
+export async function updateDestination(id: string, data: Partial<IDestination>): Promise<IDestination> {
+  const r = await api.put('/api/tours/destinations/' + id, data);
+  return r.data.data;
+}
+
 export async function deleteDestination(id: string): Promise<void> {
   await api.delete('/api/tours/destinations/' + id);
 }
